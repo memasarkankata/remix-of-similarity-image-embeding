@@ -56,11 +56,14 @@ const matchRange = (val: number, range: string): boolean => {
   return true;
 };
 
-type SortField = "similarity" | "count";
+type SortField = "similarity" | "count" | "jumlahDuplicate" | "jumlahPotentialDuplicate" | "jumlahDuplicateBySystem" | "jumlahBelumDikonfirmasi";
 
 const SORT_OPTIONS: { label: string; field: SortField }[] = [
   { label: "Similarity ↓", field: "similarity" },
-  { label: "Jumlah ↓", field: "count" },
+  { label: "Duplicate ↓", field: "jumlahDuplicate" },
+  { label: "Potential ↓", field: "jumlahPotentialDuplicate" },
+  { label: "By System ↓", field: "jumlahDuplicateBySystem" },
+  { label: "Not Confirmed ↓", field: "jumlahBelumDikonfirmasi" },
 ];
 
 const DuplicateClusterTable = ({
@@ -93,7 +96,7 @@ const DuplicateClusterTable = ({
     { key: "jumlahDuplicate", label: "Jumlah Duplicate", type: "range", options: JUMLAH_RANGES },
     { key: "jumlahPotentialDuplicate", label: "Potential Duplicate", type: "range", options: JUMLAH_RANGES },
     { key: "jumlahDuplicateBySystem", label: "Duplicate by System", type: "range", options: JUMLAH_RANGES },
-    { key: "jumlahBelumDikonfirmasi", label: "Belum Dikonfirmasi", type: "range", options: JUMLAH_RANGES },
+    { key: "jumlahBelumDikonfirmasi", label: "Not Confirmed", type: "range", options: JUMLAH_RANGES },
   ];
 
   const filtered = clusterData.filter((c) => {
@@ -207,11 +210,10 @@ const DuplicateClusterTable = ({
                   <PlainHeader label="Detail Lokasi" />
                   <PlainHeader label="Ketidaksesuaian" />
                   <PlainHeader label="Sub Ketidaksesuaian" />
-                  <SortHeader label="Jumlah Duplicate" field="count" />
-                  <PlainHeader label="Jml Duplicate" />
-                  <PlainHeader label="Jml Potential" />
-                  <PlainHeader label="Jml By System" />
-                  <PlainHeader label="Belum Dikonfirmasi" />
+                  <SortHeader label="Duplicate" field="jumlahDuplicate" />
+                  <SortHeader label="Potential" field="jumlahPotentialDuplicate" />
+                  <SortHeader label="By System" field="jumlahDuplicateBySystem" />
+                  <SortHeader label="Not Confirmed" field="jumlahBelumDikonfirmasi" />
                   <SortHeader label="Similarity" field="similarity" />
                   <PlainHeader label="View" />
                 </tr>
@@ -251,11 +253,6 @@ const DuplicateClusterTable = ({
                         <TooltipContent className="text-xs max-w-[260px]">{row.subKetidaksesuaian}</TooltipContent>
                       </Tooltip>
                     </td>
-                    <td className="text-center">
-                      <span className="inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-secondary text-xs font-semibold">
-                        {row.count}
-                      </span>
-                    </td>
                     <td className="text-center text-xs font-medium">{row.jumlahDuplicate}</td>
                     <td className="text-center text-xs font-medium">{row.jumlahPotentialDuplicate}</td>
                     <td className="text-center text-xs font-medium">{row.jumlahDuplicateBySystem}</td>
@@ -284,7 +281,7 @@ const DuplicateClusterTable = ({
           <p className="text-xs text-muted-foreground mb-3">
             Menampilkan {sorted.length} dari {clusterData.length} cluster
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             {sorted.map((row) => (
               <ClusterCard
                 key={row.id}
