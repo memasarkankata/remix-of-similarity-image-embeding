@@ -102,8 +102,8 @@ const Index = () => {
           <div
             className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-card border-r border-border shadow-2xl animate-in slide-in-from-left duration-300 ${
               semanticCompact
-                ? "w-[720px] max-w-[85vw]"
-                : "w-[960px] max-w-[90vw]"
+                ? "w-[860px] max-w-[90vw]"
+                : "w-[1120px] max-w-[95vw]"
             }`}
           >
             <SemanticReview

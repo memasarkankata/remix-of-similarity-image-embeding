@@ -169,13 +169,10 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
     v >= 80 ? "text-destructive font-bold" : v >= 70 ? "text-bar-orange font-bold" : "text-muted-foreground font-semibold";
 
   // --- Metadata Row ---
-  const MetaRow = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
-    <div className="flex items-start gap-2 text-[11px]">
-      <div className="flex items-center gap-1 text-muted-foreground min-w-[100px]">
-        <Icon className="h-3 w-3" />
-        <span>{label}</span>
-      </div>
-      <span className="font-medium text-foreground">{value}</span>
+  const MetaRow = ({ label, value }: { label: string; value: string }) => (
+    <div className="flex items-center justify-between py-1.5 border-b border-border last:border-b-0">
+      <span className="text-[11px] text-muted-foreground">{label}</span>
+      <span className="text-[11px] font-medium text-foreground text-right max-w-[60%] truncate">{value}</span>
     </div>
   );
 
@@ -190,7 +187,7 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
     };
     showSimilarity?: SimilarReport | null;
   }) => (
-    <div className="flex flex-col h-full overflow-y-auto p-3 space-y-3">
+    <div className="flex flex-col h-full overflow-y-auto p-4 space-y-3">
       {/* Title row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -206,78 +203,88 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
         </button>
       </div>
 
-      {/* Image placeholder — fixed square */}
-      <div className="bg-secondary rounded-md aspect-[4/3] max-h-[160px] flex items-center justify-center border border-border">
-        <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
+      {/* Image placeholder */}
+      <div className="bg-secondary rounded-md aspect-[16/9] flex items-center justify-center border border-border">
+        <ImageIcon className="h-8 w-8 text-muted-foreground/30" />
       </div>
 
-      {/* Metadata */}
-      <div className="space-y-1">
-        <MetaRow icon={Calendar} label="Timestamp" value={data.timestamp} />
-        <MetaRow icon={User} label="PIC" value={data.pic} />
-        <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-          <MetaRow icon={Globe} label="Site" value={data.site} />
-          <MetaRow icon={MapPin} label="Lokasi" value={data.location} />
-          <MetaRow icon={MapPin} label="Detail Lokasi" value={data.detailLokasi} />
-          <MetaRow icon={MapPin} label="Ket. Lokasi" value={data.keteranganLokasi} />
+      {/* Deskripsi Temuan */}
+      <div className="rounded-md border border-border bg-card">
+        <div className="px-3 py-2 border-b border-border bg-secondary/40">
+          <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+            <FileText className="h-3 w-3" />
+            Deskripsi Temuan
+          </span>
+        </div>
+        <div className="px-3 py-2.5">
+          <p className="text-xs leading-relaxed text-foreground">{data.deskripsi}</p>
         </div>
       </div>
-
-      {/* Deskripsi */}
-      <div className="border border-border rounded-md p-2.5">
-        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground mb-1">
-          <FileText className="h-3 w-3" />
-          Deskripsi Temuan
-        </div>
-        <p className="text-xs leading-relaxed">{data.deskripsi}</p>
-      </div>
-
-      {/* Similarity Breakdown (only middle column) */}
-      {showSimilarity && (
-        <div className="border border-border rounded-md p-2.5 space-y-1.5 bg-secondary/30">
-          <div className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
-            <ClipboardList className="h-3 w-3" />
-            Similarity Breakdown
-          </div>
-          <div className="grid grid-cols-2 gap-1.5 text-xs">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Image</span>
-              <span className={simColor(showSimilarity.imageSim)}>{showSimilarity.imageSim}%</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Text</span>
-              <span className={simColor(showSimilarity.textSim)}>{showSimilarity.textSim}%</span>
-            </div>
-            <div className="flex justify-between col-span-2 pt-1 border-t border-border">
-              <span className="font-semibold">Total</span>
-              <span className={simColor(showSimilarity.totalSim)}>{showSimilarity.totalSim}%</span>
-            </div>
-          </div>
-          <p className="text-[11px] text-muted-foreground italic">"{showSimilarity.keterangan}"</p>
-        </div>
-      )}
 
       {/* Klasifikasi */}
-      <div className="border border-border rounded-md p-2.5">
-        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground mb-1.5">
-          <ClipboardList className="h-3 w-3" />
-          Klasifikasi
+      <div className="rounded-md border border-border bg-card">
+        <div className="px-3 py-2 border-b border-border bg-secondary/40">
+          <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+            <ClipboardList className="h-3 w-3" />
+            Klasifikasi
+          </span>
         </div>
-        <div className="space-y-1 text-xs">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Ketidaksesuaian</span>
-            <span className="font-medium text-right max-w-[180px] truncate">{data.ketidaksesuaian}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Sub Ketidaksesuaian</span>
-            <span className="font-medium text-right max-w-[180px] truncate">{data.subKetidaksesuaian}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">Quick Action</span>
+        <div className="px-3 py-1">
+          <MetaRow label="Ketidaksesuaian" value={data.ketidaksesuaian} />
+          <MetaRow label="Sub Ketidaksesuaian" value={data.subKetidaksesuaian} />
+          <div className="flex items-center justify-between py-1.5">
+            <span className="text-[11px] text-muted-foreground">Quick Action</span>
             <span className="px-2 py-0.5 rounded bg-secondary text-foreground text-[10px] font-semibold">{data.quickAction}</span>
           </div>
         </div>
       </div>
+
+      {/* Metadata */}
+      <div className="rounded-md border border-border bg-card">
+        <div className="px-3 py-2 border-b border-border bg-secondary/40">
+          <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+            <Info className="h-3 w-3" />
+            Metadata
+          </span>
+        </div>
+        <div className="px-3 py-1">
+          <MetaRow label="Timestamp" value={data.timestamp} />
+          <MetaRow label="Pelapor / PIC" value={data.pic} />
+          <MetaRow label="Site" value={data.site} />
+          <MetaRow label="Lokasi" value={data.location} />
+          <MetaRow label="Detail Lokasi" value={data.detailLokasi} />
+          <MetaRow label="Keterangan Lokasi" value={data.keteranganLokasi} />
+        </div>
+      </div>
+
+      {/* Similarity Breakdown (only for comparison) */}
+      {showSimilarity && (
+        <div className="rounded-md border border-border bg-card">
+          <div className="px-3 py-2 border-b border-border bg-secondary/40">
+            <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+              <ClipboardList className="h-3 w-3" />
+              Similarity Breakdown
+            </span>
+          </div>
+          <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
+            <div className="px-3 py-2.5 text-center">
+              <p className={`text-sm font-bold tabular-nums ${simColor(showSimilarity.imageSim)}`}>{showSimilarity.imageSim}</p>
+              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mt-0.5">Image</p>
+            </div>
+            <div className="px-3 py-2.5 text-center">
+              <p className={`text-sm font-bold tabular-nums ${simColor(showSimilarity.textSim)}`}>{showSimilarity.textSim}</p>
+              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mt-0.5">Text</p>
+            </div>
+            <div className="px-3 py-2.5 text-center">
+              <p className={`text-sm font-bold tabular-nums ${simColor(showSimilarity.totalSim)}`}>{showSimilarity.totalSim}</p>
+              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mt-0.5">Total</p>
+            </div>
+          </div>
+          <div className="px-3 py-2">
+            <p className="text-[11px] text-muted-foreground italic">"{showSimilarity.keterangan}"</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -345,7 +352,7 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
       {/* Layout */}
       <div className="flex-1 min-h-0 flex">
         {/* LEFT — Representative */}
-        <div className={`${compact ? "w-1/2" : "w-[320px] min-w-[280px]"} border-r border-border flex flex-col`}>
+        <div className={`${compact ? "w-1/2" : "w-[380px] min-w-[320px]"} border-r border-border flex flex-col`}>
           <div className="px-3 py-1.5 border-b border-border bg-secondary/30">
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent text-accent-foreground text-[10px] font-semibold">
               <Star className="h-3 w-3" /> Representative
