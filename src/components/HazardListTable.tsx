@@ -158,8 +158,8 @@ const HazardListTable = ({
                   <PlainHeader label="Detail Location" />
                   <PlainHeader label="Ketidaksesuaian" />
                   <PlainHeader label="Sub Ketidaksesuaian" />
-                  <PlainHeader label="Status" />
                   <PlainHeader label="Img" />
+                  <PlainHeader label="Status" />
                   <SortHeader label="Similarity" field="clusterSimilarity" />
                   <PlainHeader label="Aksi" />
                 </tr>
@@ -206,12 +206,12 @@ const HazardListTable = ({
                         <TooltipContent className="text-xs max-w-[260px]">{row.subKetidaksesuaian}</TooltipContent>
                       </Tooltip>
                     </td>
-                    <td><StatusBadge status={row.clusterStatus} /></td>
                     <td>
                       <div className="h-8 w-8 rounded bg-secondary flex items-center justify-center border border-border">
                         <ImageIcon className="h-3.5 w-3.5 text-muted-foreground/40" />
                       </div>
                     </td>
+                    <td><StatusBadge status={row.clusterStatus} /></td>
                     <td><SimilarityBar value={row.clusterSimilarity} /></td>
                     <td>
                       <button

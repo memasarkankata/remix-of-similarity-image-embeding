@@ -5,19 +5,32 @@ import FilterToolbar, { type FilterConfig, type ActiveFilters } from "./FilterTo
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import ClusterCard, { type ClusterCardData } from "./ClusterCard";
 
-const clusterData: ClusterCardData[] = [
-  { id: "SCL-001", name: "Pelanggaran Kecepatan Area Gerbang", count: 6, similarity: 87, site: "BMO 1", location: "Hauling Road", detailLocation: "Gerbang Utama Site", classificationTitle: "DDP: Kelayakan dan Pengoperasian Kendaraan / Unit", classificationSubtitle: "Tidak menggunakan APD sesuai standard", quickAction: "Warning Letter", description: "LV melaju dengan kecepatan 45 km/jam di area 30 km/jam, potensi kecelakaan tinggi di area gerbang utama site.", tags: ["GCL-001", "LCL-001", "SCL-001"], coordinates: "-3.7893, 114.7631" },
-  { id: "SCL-002", name: "Kondisi Jalan Berlubang Pit 3", count: 5, similarity: 82, site: "BMO 1", location: "Pit Area", detailLocation: "Pit 3 Section A", classificationTitle: "Standar Road Management", classificationSubtitle: "Drainase tersumbat pada jalan angkut", quickAction: "Road Maintenance", description: "Terdapat lubang berdiameter 50cm di hauling road pit 3 mengganggu operasi dan berpotensi merusak unit.", tags: ["GCL-002", "LCL-002", "SCL-002"], coordinates: "-3.7912, 114.7645" },
-  { id: "SCL-003", name: "Retakan Highwall Pit 2", count: 5, similarity: 91, site: "BMO 1", location: "Pit Area", detailLocation: "Highwall Pit 2", classificationTitle: "Bahaya Geoteknik", classificationSubtitle: "Retakan pada highwall", quickAction: "Area Closure", description: "Terdapat retakan di highwall yang berpotensi longsor, mengancam keselamatan operator di area pit 2.", tags: ["GCL-003", "LCL-003", "SCL-003"], coordinates: "-3.7856, 114.7589" },
-  { id: "SCL-004", name: "APD Tidak Lengkap Workshop", count: 6, similarity: 65, site: "BMO 2", location: "Workshop", detailLocation: "Workshop Utama", classificationTitle: "Perlengkapan APD", classificationSubtitle: "APD tidak lengkap saat bekerja", quickAction: "Safety Briefing", description: "Operator HD tidak menggunakan safety vest saat keluar dari unit di area workshop maintenance.", tags: ["GCL-004", "LCL-004", "SCL-004"], coordinates: "-3.7934, 114.7678" },
-  { id: "SCL-005", name: "Helm Safety Area Konstruksi", count: 6, similarity: 78, site: "BMO 1", location: "Hauling Road", detailLocation: "Area Konstruksi Jalan", classificationTitle: "DDP: Kelayakan dan Pengoperasian Kendaraan / Unit", classificationSubtitle: "Tidak menggunakan APD sesuai standard", quickAction: "Fatigue Test", description: "Pekerja tidak menggunakan helm saat berada di area konstruksi hauling road, pelanggaran APD berulang.", tags: ["GCL-005", "LCL-005", "SCL-005"], coordinates: "-3.7901, 114.7612" },
-  { id: "SCL-006", name: "Drainase Tersumbat Red Zone", count: 4, similarity: 80, site: "BMO 1", location: "Warehouse", detailLocation: "Red Zone Area", classificationTitle: "Standar Road Management", classificationSubtitle: "Drainase tersumbat material", quickAction: "Road Maintenance", description: "Drainase tersumbat material di red zone, menyebabkan genangan air dan risiko tergelincir di area warehouse.", tags: ["GCL-006", "LCL-006", "SCL-006"], coordinates: "-3.7878, 114.7701" },
-  { id: "SCL-007", name: "Rambu Lalu Lintas Rusak Pit 1", count: 4, similarity: 73, site: "BMO 1", location: "Pit Area", detailLocation: "Pit 1 Entrance", classificationTitle: "Rambu dan Marka", classificationSubtitle: "Rambu tidak terpasang/rusak", quickAction: "Road Maintenance", description: "Rambu batas kecepatan 25 km/jam di entrance pit 1 roboh dan tidak terbaca oleh operator unit.", tags: ["GCL-007", "LCL-007", "SCL-007"], coordinates: "-3.7845, 114.7555" },
-  { id: "SCL-008", name: "Kebocoran Oli Area Fueling", count: 7, similarity: 88, site: "BMO 2", location: "Workshop", detailLocation: "Fueling Station", classificationTitle: "Tumpahan B3", classificationSubtitle: "Kebocoran oli/solar pada unit", quickAction: "Area Closure", description: "Terdapat kebocoran oli dari excavator saat proses fueling, tumpahan mencapai area drainage tanpa spill kit.", tags: ["GCL-008", "LCL-008", "SCL-008"], coordinates: "-3.7960, 114.7690" },
+export interface ClusterRowData extends ClusterCardData {
+  detailLocation: string;
+  ketidaksesuaian: string;
+  subKetidaksesuaian: string;
+  jumlahDuplicate: number;
+  jumlahPotentialDuplicate: number;
+  jumlahDuplicateBySystem: number;
+  jumlahBelumDikonfirmasi: number;
+}
+
+const clusterData: ClusterRowData[] = [
+  { id: "SCL-001", name: "Pelanggaran Kecepatan Area Gerbang", count: 6, similarity: 87, site: "BMO 1", location: "Hauling Road", detailLocation: "Gerbang Utama Site", classificationTitle: "DDP: Kelayakan dan Pengoperasian Kendaraan / Unit", classificationSubtitle: "Tidak menggunakan APD sesuai standard", quickAction: "Warning Letter", description: "LV melaju dengan kecepatan 45 km/jam di area 30 km/jam.", tags: ["GCL-001", "LCL-001", "SCL-001"], coordinates: "-3.7893, 114.7631", ketidaksesuaian: "DDP : Kelayakan dan Pengoperasian Kendaraan", subKetidaksesuaian: "Tidak menggunakan APD sesuai standard", jumlahDuplicate: 2, jumlahPotentialDuplicate: 2, jumlahDuplicateBySystem: 1, jumlahBelumDikonfirmasi: 1 },
+  { id: "SCL-002", name: "Kondisi Jalan Berlubang Pit 3", count: 5, similarity: 82, site: "BMO 1", location: "Pit Area", detailLocation: "Pit 3 Section A", classificationTitle: "Standar Road Management", classificationSubtitle: "Drainase tersumbat pada jalan angkut", quickAction: "Road Maintenance", description: "Terdapat lubang berdiameter 50cm di hauling road pit 3.", tags: ["GCL-002", "LCL-002", "SCL-002"], coordinates: "-3.7912, 114.7645", ketidaksesuaian: "Standar Road Maintenance", subKetidaksesuaian: "Kondisi jalan tidak layak operasi", jumlahDuplicate: 2, jumlahPotentialDuplicate: 1, jumlahDuplicateBySystem: 1, jumlahBelumDikonfirmasi: 1 },
+  { id: "SCL-003", name: "Retakan Highwall Pit 2", count: 5, similarity: 91, site: "BMO 1", location: "Pit Area", detailLocation: "Highwall Pit 2", classificationTitle: "Bahaya Geoteknik", classificationSubtitle: "Retakan pada highwall", quickAction: "Area Closure", description: "Terdapat retakan di highwall yang berpotensi longsor.", tags: ["GCL-003", "LCL-003", "SCL-003"], coordinates: "-3.7856, 114.7589", ketidaksesuaian: "Geotechnical Monitoring", subKetidaksesuaian: "Retakan/pergerakan tanah terdeteksi", jumlahDuplicate: 2, jumlahPotentialDuplicate: 2, jumlahDuplicateBySystem: 0, jumlahBelumDikonfirmasi: 1 },
+  { id: "SCL-004", name: "APD Tidak Lengkap Workshop", count: 6, similarity: 65, site: "BMO 2", location: "Workshop", detailLocation: "Workshop Utama", classificationTitle: "Perlengkapan APD", classificationSubtitle: "APD tidak lengkap saat bekerja", quickAction: "Safety Briefing", description: "Operator HD tidak menggunakan safety vest.", tags: ["GCL-004", "LCL-004", "SCL-004"], coordinates: "-3.7934, 114.7678", ketidaksesuaian: "Perlengkapan APD", subKetidaksesuaian: "Tidak menggunakan APD sesuai standard", jumlahDuplicate: 3, jumlahPotentialDuplicate: 1, jumlahDuplicateBySystem: 1, jumlahBelumDikonfirmasi: 1 },
+  { id: "SCL-005", name: "Helm Safety Area Konstruksi", count: 6, similarity: 78, site: "BMO 1", location: "Hauling Road", detailLocation: "Area Konstruksi Jalan", classificationTitle: "DDP: Kelayakan dan Pengoperasian Kendaraan / Unit", classificationSubtitle: "Tidak menggunakan APD sesuai standard", quickAction: "Fatigue Test", description: "Pekerja tidak menggunakan helm saat berada di area konstruksi.", tags: ["GCL-005", "LCL-005", "SCL-005"], coordinates: "-3.7901, 114.7612", ketidaksesuaian: "Perlengkapan APD", subKetidaksesuaian: "Tidak menggunakan helm safety", jumlahDuplicate: 2, jumlahPotentialDuplicate: 1, jumlahDuplicateBySystem: 2, jumlahBelumDikonfirmasi: 1 },
+  { id: "SCL-006", name: "Drainase Tersumbat Red Zone", count: 4, similarity: 80, site: "BMO 1", location: "Warehouse", detailLocation: "Red Zone Area", classificationTitle: "Standar Road Management", classificationSubtitle: "Drainase tersumbat material", quickAction: "Road Maintenance", description: "Drainase tersumbat material di red zone.", tags: ["GCL-006", "LCL-006", "SCL-006"], coordinates: "-3.7878, 114.7701", ketidaksesuaian: "Standar Road Maintenance", subKetidaksesuaian: "Drainase tersumbat material", jumlahDuplicate: 1, jumlahPotentialDuplicate: 2, jumlahDuplicateBySystem: 0, jumlahBelumDikonfirmasi: 1 },
+  { id: "SCL-007", name: "Rambu Lalu Lintas Rusak Pit 1", count: 4, similarity: 73, site: "BMO 1", location: "Pit Area", detailLocation: "Pit 1 Entrance", classificationTitle: "Rambu dan Marka", classificationSubtitle: "Rambu tidak terpasang/rusak", quickAction: "Road Maintenance", description: "Rambu batas kecepatan 25 km/jam di entrance pit 1 roboh.", tags: ["GCL-007", "LCL-007", "SCL-007"], coordinates: "-3.7845, 114.7555", ketidaksesuaian: "Rambu dan Marka", subKetidaksesuaian: "Rambu tidak terpasang/rusak", jumlahDuplicate: 2, jumlahPotentialDuplicate: 1, jumlahDuplicateBySystem: 0, jumlahBelumDikonfirmasi: 1 },
+  { id: "SCL-008", name: "Kebocoran Oli Area Fueling", count: 7, similarity: 88, site: "BMO 2", location: "Workshop", detailLocation: "Fueling Station", classificationTitle: "Tumpahan B3", classificationSubtitle: "Kebocoran oli/solar pada unit", quickAction: "Area Closure", description: "Terdapat kebocoran oli dari excavator saat proses fueling.", tags: ["GCL-008", "LCL-008", "SCL-008"], coordinates: "-3.7960, 114.7690", ketidaksesuaian: "Tumpahan B3", subKetidaksesuaian: "Kebocoran oli/solar pada unit", jumlahDuplicate: 3, jumlahPotentialDuplicate: 2, jumlahDuplicateBySystem: 1, jumlahBelumDikonfirmasi: 1 },
 ];
 
 const SITES = [...new Set(clusterData.map((c) => c.site))];
 const LOCATIONS = [...new Set(clusterData.map((c) => c.location))];
+const DETAIL_LOCATIONS = [...new Set(clusterData.map((c) => c.detailLocation))];
+const KETIDAKSESUAIANS = [...new Set(clusterData.map((c) => c.ketidaksesuaian))];
+const SUB_KETIDAKSESUAIANS = [...new Set(clusterData.map((c) => c.subKetidaksesuaian))];
 const SIMILARITY_RANGES = ["<60", "60–69", "70–79", "80–89", "≥90"];
 const JUMLAH_RANGES = ["1–3", "4–6", "7–10", ">10"];
 
@@ -73,8 +86,14 @@ const DuplicateClusterTable = ({
   const filterConfigs: FilterConfig[] = [
     { key: "site", label: "Site", type: "multi-select", options: SITES },
     { key: "location", label: "Lokasi", type: "multi-select", options: LOCATIONS },
-    { key: "similarity", label: "Similarity", type: "range", options: SIMILARITY_RANGES },
+    { key: "detailLocation", label: "Detail Lokasi", type: "multi-select", options: DETAIL_LOCATIONS },
+    { key: "ketidaksesuaian", label: "Ketidaksesuaian", type: "multi-select", options: KETIDAKSESUAIANS },
+    { key: "subKetidaksesuaian", label: "Sub Ketidaksesuaian", type: "multi-select", options: SUB_KETIDAKSESUAIANS },
     { key: "jumlahHazard", label: "Jumlah Hazard", type: "range", options: JUMLAH_RANGES },
+    { key: "jumlahDuplicate", label: "Jumlah Duplicate", type: "range", options: JUMLAH_RANGES },
+    { key: "jumlahPotentialDuplicate", label: "Potential Duplicate", type: "range", options: JUMLAH_RANGES },
+    { key: "jumlahDuplicateBySystem", label: "Duplicate by System", type: "range", options: JUMLAH_RANGES },
+    { key: "jumlahBelumDikonfirmasi", label: "Belum Dikonfirmasi", type: "range", options: JUMLAH_RANGES },
   ];
 
   const filtered = clusterData.filter((c) => {
@@ -82,8 +101,15 @@ const DuplicateClusterTable = ({
     const sf = sharedFilters;
     if (sf.site?.length > 0 && !sf.site.includes(c.site)) return false;
     if (sf.location?.length > 0 && !sf.location.includes(c.location)) return false;
+    if (sf.detailLocation?.length > 0 && !sf.detailLocation.includes(c.detailLocation)) return false;
+    if (sf.ketidaksesuaian?.length > 0 && !sf.ketidaksesuaian.includes(c.ketidaksesuaian)) return false;
+    if (sf.subKetidaksesuaian?.length > 0 && !sf.subKetidaksesuaian.includes(c.subKetidaksesuaian)) return false;
     if (sf.similarity?.length > 0 && !sf.similarity.some((r) => matchRange(c.similarity, r))) return false;
     if (sf.jumlahHazard?.length > 0 && !sf.jumlahHazard.some((r) => matchRange(c.count, r))) return false;
+    if (sf.jumlahDuplicate?.length > 0 && !sf.jumlahDuplicate.some((r) => matchRange(c.jumlahDuplicate, r))) return false;
+    if (sf.jumlahPotentialDuplicate?.length > 0 && !sf.jumlahPotentialDuplicate.some((r) => matchRange(c.jumlahPotentialDuplicate, r))) return false;
+    if (sf.jumlahDuplicateBySystem?.length > 0 && !sf.jumlahDuplicateBySystem.some((r) => matchRange(c.jumlahDuplicateBySystem, r))) return false;
+    if (sf.jumlahBelumDikonfirmasi?.length > 0 && !sf.jumlahBelumDikonfirmasi.some((r) => matchRange(c.jumlahBelumDikonfirmasi, r))) return false;
     return true;
   });
 
@@ -107,7 +133,6 @@ const DuplicateClusterTable = ({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Toolbar */}
       <FilterToolbar
         searchPlaceholder="Search SCL ID, nama cluster, deskripsi…"
         searchValue={search}
@@ -117,9 +142,7 @@ const DuplicateClusterTable = ({
         onFilterChange={onSharedFilterChange}
         onClearAll={onClearAll}
       >
-        {/* Sort dropdown + View toggle injected as children */}
         <div className="flex items-center gap-2 ml-auto">
-          {/* Sort dropdown */}
           <div className="relative">
             <button
               onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
@@ -146,7 +169,6 @@ const DuplicateClusterTable = ({
             )}
           </div>
 
-          {/* View toggle */}
           <div className="flex items-center gap-0.5 p-0.5 bg-secondary rounded-md">
             <button
               onClick={() => setViewMode("table")}
@@ -180,13 +202,18 @@ const DuplicateClusterTable = ({
               <thead>
                 <tr>
                   <PlainHeader label="Cluster ID" />
-                  <PlainHeader label="Nama Cluster" />
-                  <SortHeader label="Jumlah Hazard" field="count" />
-                  <SortHeader label="Similarity" field="similarity" />
                   <PlainHeader label="Site" />
                   <PlainHeader label="Lokasi" />
-                  <PlainHeader label="Deskripsi" />
-                  <PlainHeader label="Aksi" />
+                  <PlainHeader label="Detail Lokasi" />
+                  <PlainHeader label="Ketidaksesuaian" />
+                  <PlainHeader label="Sub Ketidaksesuaian" />
+                  <SortHeader label="Jumlah Duplicate" field="count" />
+                  <PlainHeader label="Jml Duplicate" />
+                  <PlainHeader label="Jml Potential" />
+                  <PlainHeader label="Jml By System" />
+                  <PlainHeader label="Belum Dikonfirmasi" />
+                  <SortHeader label="Similarity" field="similarity" />
+                  <PlainHeader label="View" />
                 </tr>
               </thead>
               <tbody>
@@ -204,31 +231,43 @@ const DuplicateClusterTable = ({
                         {row.id}
                       </button>
                     </td>
-                    <td>{row.name}</td>
+                    <td className="text-xs">{row.site}</td>
+                    <td className="text-xs">{row.location}</td>
+                    <td className="text-xs max-w-[120px]">
+                      <Tooltip>
+                        <TooltipTrigger asChild><span className="block truncate">{row.detailLocation}</span></TooltipTrigger>
+                        <TooltipContent className="text-xs">{row.detailLocation}</TooltipContent>
+                      </Tooltip>
+                    </td>
+                    <td className="text-xs max-w-[140px]">
+                      <Tooltip>
+                        <TooltipTrigger asChild><span className="block truncate">{row.ketidaksesuaian}</span></TooltipTrigger>
+                        <TooltipContent className="text-xs max-w-[260px]">{row.ketidaksesuaian}</TooltipContent>
+                      </Tooltip>
+                    </td>
+                    <td className="text-xs max-w-[140px]">
+                      <Tooltip>
+                        <TooltipTrigger asChild><span className="block truncate">{row.subKetidaksesuaian}</span></TooltipTrigger>
+                        <TooltipContent className="text-xs max-w-[260px]">{row.subKetidaksesuaian}</TooltipContent>
+                      </Tooltip>
+                    </td>
                     <td className="text-center">
                       <span className="inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-secondary text-xs font-semibold">
                         {row.count}
                       </span>
                     </td>
+                    <td className="text-center text-xs font-medium">{row.jumlahDuplicate}</td>
+                    <td className="text-center text-xs font-medium">{row.jumlahPotentialDuplicate}</td>
+                    <td className="text-center text-xs font-medium">{row.jumlahDuplicateBySystem}</td>
+                    <td className="text-center text-xs font-medium">{row.jumlahBelumDikonfirmasi}</td>
                     <td><SimilarityBar value={row.similarity} /></td>
-                    <td>{row.site}</td>
-                    <td>{row.location}</td>
-                    <td className="max-w-[200px]">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="block truncate">{row.description}</span>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="max-w-[300px] text-xs">
-                          {row.description}
-                        </TooltipContent>
-                      </Tooltip>
-                    </td>
                     <td>
                       <button
                         onClick={(e) => { e.stopPropagation(); onOpenSemanticReview?.(row.id); }}
-                        className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-3.5 w-3.5" />
+                        View
                       </button>
                     </td>
                   </tr>
@@ -241,7 +280,6 @@ const DuplicateClusterTable = ({
           </div>
         </>
       ) : (
-        /* Card View */
         <div className="flex-1 overflow-auto">
           <p className="text-xs text-muted-foreground mb-3">
             Menampilkan {sorted.length} dari {clusterData.length} cluster
