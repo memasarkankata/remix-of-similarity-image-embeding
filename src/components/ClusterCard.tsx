@@ -1,4 +1,4 @@
-import { Eye, MapPin, AlertTriangle, Image as ImageIcon, Layers } from "lucide-react";
+import { Eye, MapPin, AlertTriangle, Image as ImageIcon, Layers, Clock } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export interface ClusterCardData {
@@ -22,8 +22,10 @@ interface ClusterCardProps {
     jumlahDuplicate?: number;
     jumlahPotentialDuplicate?: number;
     jumlahDuplicateBySystem?: number;
-    jumlahBelumDikonfirmasi?: number;
+    jumlahWaiting?: number;
+    waitingSeconds?: number;
   };
+  countdown?: number;
   onClick: (clusterId: string) => void;
 }
 
@@ -34,12 +36,22 @@ const simColor = (v: number) => {
   return "text-pill-green-fg";
 };
 
-const ClusterCard = ({ data, onClick }: ClusterCardProps) => {
+const formatCountdown = (totalSec: number): string => {
+  if (totalSec <= 0) return "";
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return `${m}:${String(s).padStart(2, "0")}`;
+};
+
+const ClusterCard = ({ data, countdown = 0, onClick }: ClusterCardProps) => {
+  const waitingCount = data.jumlahWaiting ?? 0;
   const stats = [
     { label: "Duplicate", value: data.jumlahDuplicate ?? 0 },
     { label: "Potential", value: data.jumlahPotentialDuplicate ?? 0 },
     { label: "By System", value: data.jumlahDuplicateBySystem ?? 0 },
-    { label: "Not Confirmed", value: data.jumlahBelumDikonfirmasi ?? 0 },
+    { label: "Waiting", value: waitingCount },
   ];
 
   return (
@@ -84,8 +96,31 @@ const ClusterCard = ({ data, onClick }: ClusterCardProps) => {
         ))}
       </div>
 
-      {/* Body */}
+      {/* Waiting countdown */}
+      {waitingCount > 0 && countdown > 0 && (
+        <div className="px-4 py-1.5 border-b border-border bg-pill-yellow-bg/30 flex items-center gap-1.5">
+          <Clock className="h-3 w-3 text-pill-yellow-fg" />
+          <span className="text-[10px] font-medium text-pill-yellow-fg">Waiting</span>
+          <span className="ml-auto text-[11px] font-bold font-mono tabular-nums text-pill-yellow-fg">{formatCountdown(countdown)}</span>
+        </div>
+      )}
+
+      {/* Body — image + description side by side */}
       <div className="px-4 py-3 space-y-2.5">
+        <div className="flex gap-3">
+          <div className="h-16 w-16 rounded bg-secondary flex items-center justify-center flex-shrink-0 border border-border">
+            <ImageIcon className="h-5 w-5 text-muted-foreground/30" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <p className="text-[11px] text-muted-foreground line-clamp-3 leading-relaxed">{data.description}</p>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[280px] text-xs">{data.description}</TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
+
         {/* Location */}
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <MapPin className="h-3 w-3 flex-shrink-0" />
@@ -100,14 +135,6 @@ const ClusterCard = ({ data, onClick }: ClusterCardProps) => {
             <p className="text-[10px] text-muted-foreground truncate">{data.classificationSubtitle}</p>
           </div>
         </div>
-
-        {/* Description */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">{data.description}</p>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" className="max-w-[280px] text-xs">{data.description}</TooltipContent>
-        </Tooltip>
       </div>
     </div>
   );

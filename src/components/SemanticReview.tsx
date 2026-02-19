@@ -142,9 +142,12 @@ interface SemanticReviewProps {
   onBack: () => void;
   compact?: boolean;
   selectedHazardId?: string;
+  /** When opened from List Hazard, show cluster name and allow navigating to cluster semantic review */
+  fromListHazard?: boolean;
+  onNavigateToCluster?: (clusterId: string) => void;
 }
 
-const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }: SemanticReviewProps) => {
+const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, fromListHazard = false, onNavigateToCluster }: SemanticReviewProps) => {
   const clusterIndex = clusterIds.indexOf(clusterId);
   const cluster = dummyClusters.find((c) => c.id === clusterId) ?? dummyClusters[0];
 
@@ -330,7 +333,20 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
             </div>
             <div>
               <h2 className="text-sm font-bold text-foreground">Semantic Review</h2>
-              <p className="text-xs text-muted-foreground">{cluster.id}</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs text-muted-foreground">{cluster.id}</p>
+                {fromListHazard && (
+                  <>
+                    <span className="text-xs text-muted-foreground">·</span>
+                    <button
+                      onClick={() => onNavigateToCluster?.(cluster.id)}
+                      className="text-xs text-primary hover:underline font-medium"
+                    >
+                      {cluster.name}
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>

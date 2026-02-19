@@ -9,17 +9,28 @@ const Index = () => {
   const [semanticClusterId, setSemanticClusterId] = useState<string | null>(null);
   const [semanticHazardId, setSemanticHazardId] = useState<string | undefined>(undefined);
   const [semanticCompact, setSemanticCompact] = useState(false);
+  const [semanticFromListHazard, setSemanticFromListHazard] = useState(false);
 
   const handleOpenSemanticReview = (clusterId: string, hazardId?: string, compact?: boolean) => {
     setSemanticClusterId(clusterId);
     setSemanticHazardId(hazardId);
     setSemanticCompact(compact ?? false);
+    setSemanticFromListHazard(compact ?? false); // compact = true means from List Hazard
+  };
+
+  const handleNavigateToCluster = (clusterId: string) => {
+    // Close current panel and reopen as full semantic review (from Duplicate Cluster)
+    setSemanticClusterId(clusterId);
+    setSemanticHazardId(undefined);
+    setSemanticCompact(false);
+    setSemanticFromListHazard(false);
   };
 
   const handleClosePanel = () => {
     setSemanticClusterId(null);
     setSemanticHazardId(undefined);
     setSemanticCompact(false);
+    setSemanticFromListHazard(false);
   };
 
   return (
@@ -111,6 +122,8 @@ const Index = () => {
               onBack={handleClosePanel}
               compact={semanticCompact}
               selectedHazardId={semanticHazardId}
+              fromListHazard={semanticFromListHazard}
+              onNavigateToCluster={handleNavigateToCluster}
             />
           </div>
         </>
