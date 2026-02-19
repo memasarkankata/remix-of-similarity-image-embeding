@@ -16,7 +16,8 @@ const autoVariant = (status: string): string => {
   if (s.includes("by system")) return "blue";
   if (s.includes("kuat") || s === "duplicate") return "red";
   if (s.includes("mungkin") || s.includes("potential")) return "yellow";
-  if (s.includes("selesai") || s.includes("done")) return "green";
+  if (s.includes("selesai") || s.includes("done") || s === "confirmed") return "green";
+  if (s === "waiting") return "yellow";
   return "purple";
 };
 

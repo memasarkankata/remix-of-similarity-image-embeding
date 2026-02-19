@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, X, Star, Calendar, User, MapPin, Globe, Copy, CheckCircle, XCircle, Clock, RefreshCw, Info, Image as ImageIcon, FileText, ClipboardList } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, X, Star, Copy, CheckCircle, XCircle, Clock, RefreshCw, Info, Image as ImageIcon, FileText, MapPin, Users, ArrowUpDown, Filter, ChevronDown } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
@@ -8,8 +8,10 @@ interface SimilarReport {
   id: string;
   fullId: string;
   date: string;
+  timestamp: string;
   pic: string;
-  status: "Duplicate" | "Potential Duplicate" | "Duplicate by System";
+  picPerusahaan: string;
+  status: "Duplicate" | "Potential Duplicate" | "Duplicate by System" | "Confirmed" | "Waiting";
   description: string;
   similarity: number;
   autoConfirmSeconds?: number;
@@ -21,7 +23,7 @@ interface SimilarReport {
   imageSim: number;
   textSim: number;
   totalSim: number;
-  keterangan: string;
+  simLabel: "Gambar mirip" | "Text mirip" | "Gambar dan text mirip";
   ketidaksesuaian: string;
   subKetidaksesuaian: string;
   quickAction: string;
@@ -35,10 +37,12 @@ interface ClusterInfo {
   duplicateCount: number;
   potentialCount: number;
   systemCount: number;
+  waitingCount: number;
   representative: {
     fullId: string;
     timestamp: string;
     pic: string;
+    picPerusahaan: string;
     site: string;
     location: string;
     detailLokasi: string;
@@ -61,10 +65,12 @@ const dummyClusters: ClusterInfo[] = [
     duplicateCount: 2,
     potentialCount: 3,
     systemCount: 1,
+    waitingCount: 1,
     representative: {
       fullId: "HR-2025-336-23917",
-      timestamp: "2025-12-13T07:45:00Z",
+      timestamp: "2025-12-13 07:45",
       pic: "Siti Rahayu",
+      picPerusahaan: "PT Berau Coal",
       site: "BMO 1",
       location: "Hauling Road",
       detailLokasi: "Gerbang Utama Site",
@@ -76,55 +82,59 @@ const dummyClusters: ClusterInfo[] = [
     },
     reports: [
       {
-        id: "23930", fullId: "HR-2025-336-23930", date: "01 Des 2025", pic: "Eko Prasetyo",
+        id: "23930", fullId: "HR-2025-336-23930", date: "01 Des 2025", timestamp: "08:12",
+        pic: "Eko Prasetyo", picPerusahaan: "PT Pamapersada",
         status: "Duplicate", description: "HD melaju 40 km/jam melewati area gerbang utama mengurangi…",
         similarity: 89, autoConfirmSeconds: 58,
         site: "BMO 1", location: "Hauling Road", detailLokasi: "Gerbang Utama Site", keteranganLokasi: "(B 65) Area Gerbang",
         deskripsi: "HD melaju 40 km/jam melewati area gerbang utama mengurangi kecepatan hanya saat melewati pos security.",
-        imageSim: 72, textSim: 94, totalSim: 89, keterangan: "Gambar berpotensi sama, deskripsi mirip",
+        imageSim: 72, textSim: 94, totalSim: 89, simLabel: "Gambar dan text mirip",
         ketidaksesuaian: "Kelayakan/Penggunaan Tools", subKetidaksesuaian: "Kesesuaian penggunaan Supporting Tools", quickAction: "Safety Briefing",
       },
       {
-        id: "23931", fullId: "HR-2025-336-23931", date: "30 Nov 2025", pic: "Suryadi Wijaya",
+        id: "23931", fullId: "HR-2025-336-23931", date: "30 Nov 2025", timestamp: "14:30",
+        pic: "Suryadi Wijaya", picPerusahaan: "PT Berau Coal",
         status: "Duplicate", description: "Kendaraan LV melaju dengan kecepatan tinggi di area 30 km/jam tanpa…",
         similarity: 86, autoConfirmSeconds: 58,
         site: "BMO 1", location: "Hauling Road", detailLokasi: "Gerbang Utama Site", keteranganLokasi: "(B 65) Area Gerbang",
         deskripsi: "Kendaraan LV melaju dengan kecepatan tinggi di area 30 km/jam tanpa mengurangi kecepatan sama sekali.",
-        imageSim: 68, textSim: 91, totalSim: 86, keterangan: "Gambar cukup mirip, deskripsi sangat mirip",
+        imageSim: 68, textSim: 91, totalSim: 86, simLabel: "Text mirip",
         ketidaksesuaian: "DDP : Kelayakan dan Pengoperasian Kendara…", subKetidaksesuaian: "Tidak menggunakan APD sesuai standard", quickAction: "Warning Letter",
       },
       {
-        id: "23932", fullId: "HR-2025-336-23932", date: "29 Nov 2025", pic: "Agung Nugroho",
+        id: "23932", fullId: "HR-2025-336-23932", date: "29 Nov 2025", timestamp: "09:55",
+        pic: "Agung Nugroho", picPerusahaan: "PT Pamapersada",
         status: "Potential Duplicate", description: "Dump truck melintas gerbang dengan kecepatan 35 km/jam di zona 25 km/jam.",
         similarity: 84, autoConfirmSeconds: 58,
         site: "BMO 1", location: "Hauling Road", detailLokasi: "Gerbang Utama Site", keteranganLokasi: "(B 65) Area Gerbang",
         deskripsi: "Dump truck melintas gerbang dengan kecepatan 35 km/jam di zona 25 km/jam.",
-        imageSim: 60, textSim: 88, totalSim: 84, keterangan: "Gambar berbeda konteks, deskripsi mirip",
+        imageSim: 60, textSim: 88, totalSim: 84, simLabel: "Text mirip",
         ketidaksesuaian: "Kelayakan/Penggunaan Tools", subKetidaksesuaian: "Kesesuaian penggunaan Supporting Tools", quickAction: "Safety Briefing",
       },
       {
-        id: "23920", fullId: "HR-2025-336-23920", date: "02 Des 2025", pic: "Bambang Sutrisno",
-        status: "Potential Duplicate", description: "Driver LV tidak menggunakan seatbelt saat melintas gerbang.",
+        id: "23920", fullId: "HR-2025-336-23920", date: "02 Des 2025", timestamp: "11:20",
+        pic: "Bambang Sutrisno", picPerusahaan: "PT Berau Coal",
+        status: "Waiting", description: "Driver LV tidak menggunakan seatbelt saat melintas gerbang.",
         similarity: 83, autoConfirmSeconds: undefined,
         site: "BMO 1", location: "Hauling Road", detailLokasi: "Gerbang Utama Site", keteranganLokasi: "(B 65) Area Gerbang",
         deskripsi: "Driver LV tidak menggunakan seatbelt saat melintas gerbang.",
-        imageSim: 55, textSim: 82, totalSim: 83, keterangan: "Gambar berbeda, deskripsi cukup mirip",
+        imageSim: 55, textSim: 82, totalSim: 83, simLabel: "Gambar mirip",
         ketidaksesuaian: "Kelayakan/Penggunaan Tools", subKetidaksesuaian: "Kesesuaian penggunaan Supporting Tools", quickAction: "Safety Briefing",
       },
       {
-        id: "23940", fullId: "HR-2025-336-23940", date: "03 Des 2025", pic: "Siti Rahayu",
+        id: "23940", fullId: "HR-2025-336-23940", date: "03 Des 2025", timestamp: "07:45",
+        pic: "Siti Rahayu", picPerusahaan: "PT Berau Coal",
         status: "Duplicate by System", description: "LV melaju dengan kecepatan 45 km/jam di area 30 km/jam.",
         similarity: 99, autoConfirmSeconds: 0,
         site: "BMO 1", location: "Hauling Road", detailLokasi: "Gerbang Utama Site", keteranganLokasi: "(B 65) Area Gerbang",
         deskripsi: "LV melaju dengan kecepatan 45 km/jam di area 30 km/jam.",
-        imageSim: 98, textSim: 100, totalSim: 99, keterangan: "Laporan identik – same reporter, Δt ≤ 5s",
+        imageSim: 98, textSim: 100, totalSim: 99, simLabel: "Gambar dan text mirip",
         ketidaksesuaian: "DDP : Kelayakan dan Pengoperasian Kendara…", subKetidaksesuaian: "Tidak menggunakan APD sesuai standard", quickAction: "Warning Letter",
       },
     ],
   },
 ];
 
-// Build cluster map for pagination
 const clusterIds = ["SCL-001", "SCL-002", "SCL-003", "SCL-004", "SCL-005", "SCL-006", "SCL-007", "SCL-008"];
 
 interface SemanticReviewProps {
@@ -138,13 +148,13 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
   const clusterIndex = clusterIds.indexOf(clusterId);
   const cluster = dummyClusters.find((c) => c.id === clusterId) ?? dummyClusters[0];
 
-  // In compact mode, find the report matching selectedHazardId, or use first report
   const initialReportId = selectedHazardId
     ? cluster.reports.find((r) => r.fullId === selectedHazardId)?.id ?? cluster.reports[0]?.id ?? null
     : cluster.reports[0]?.id ?? null;
 
   const [selectedReportId, setSelectedReportId] = useState<string | null>(initialReportId);
   const [statusFilter, setStatusFilter] = useState<string>("Semua");
+  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [bukanExpandId, setBukanExpandId] = useState<string | null>(null);
   const [bukanReason, setBukanReason] = useState("");
@@ -156,8 +166,14 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
     if (statusFilter === "Duplicate") return r.status === "Duplicate";
     if (statusFilter === "Potential") return r.status === "Potential Duplicate";
     if (statusFilter === "System") return r.status === "Duplicate by System";
+    if (statusFilter === "Confirmed") return r.status === "Confirmed";
+    if (statusFilter === "Waiting") return r.status === "Waiting";
     return true;
   });
+
+  const sortedReports = [...filteredReports].sort((a, b) =>
+    sortOrder === "desc" ? b.similarity - a.similarity : a.similarity - b.similarity
+  );
 
   const copyId = (id: string) => {
     navigator.clipboard.writeText(id);
@@ -167,6 +183,12 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
 
   const simColor = (v: number) =>
     v >= 80 ? "text-destructive font-bold" : v >= 70 ? "text-bar-orange font-bold" : "text-muted-foreground font-semibold";
+
+  const simLabelStyle = (label: string) => {
+    if (label === "Gambar dan text mirip") return "bg-destructive/10 text-destructive border-destructive/20";
+    if (label === "Text mirip") return "bg-primary/10 text-primary border-primary/20";
+    return "bg-secondary text-muted-foreground border-border";
+  };
 
   // --- Metadata Row ---
   const MetaRow = ({ label, value }: { label: string; value: string }) => (
@@ -181,7 +203,7 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
     title: string;
     badge?: React.ReactNode;
     data: {
-      fullId: string; timestamp: string; pic: string; site: string;
+      fullId: string; timestamp: string; pic: string; picPerusahaan: string; site: string;
       location: string; detailLokasi: string; keteranganLokasi: string;
       deskripsi: string; ketidaksesuaian: string; subKetidaksesuaian: string; quickAction: string;
     };
@@ -203,32 +225,26 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
         </button>
       </div>
 
-      {/* Image placeholder */}
-      <div className="bg-secondary rounded-md aspect-[16/9] flex items-center justify-center border border-border">
+      {/* Image placeholder - fixed height */}
+      <div className="bg-secondary rounded-md h-[160px] flex items-center justify-center border border-border flex-shrink-0">
         <ImageIcon className="h-8 w-8 text-muted-foreground/30" />
       </div>
 
-      {/* Deskripsi Temuan */}
-      <div className="rounded-md border border-border bg-card">
+      {/* Deskripsi Temuan - fixed height with truncation */}
+      <div className="rounded-md border border-border bg-card flex-shrink-0">
         <div className="px-3 py-2 border-b border-border bg-secondary/40">
           <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
             <FileText className="h-3 w-3" />
             Deskripsi Temuan
           </span>
         </div>
-        <div className="px-3 py-2.5">
-          <p className="text-xs leading-relaxed text-foreground">{data.deskripsi}</p>
+        <div className="px-3 py-2.5 h-[52px] overflow-hidden">
+          <p className="text-xs leading-relaxed text-foreground line-clamp-2">{data.deskripsi}</p>
         </div>
       </div>
 
-      {/* Klasifikasi */}
-      <div className="rounded-md border border-border bg-card">
-        <div className="px-3 py-2 border-b border-border bg-secondary/40">
-          <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
-            <ClipboardList className="h-3 w-3" />
-            Klasifikasi
-          </span>
-        </div>
+      {/* Klasifikasi - no section title, just rows */}
+      <div className="rounded-md border border-border bg-card flex-shrink-0">
         <div className="px-3 py-1">
           <MetaRow label="Ketidaksesuaian" value={data.ketidaksesuaian} />
           <MetaRow label="Sub Ketidaksesuaian" value={data.subKetidaksesuaian} />
@@ -239,32 +255,42 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
         </div>
       </div>
 
-      {/* Metadata */}
-      <div className="rounded-md border border-border bg-card">
-        <div className="px-3 py-2 border-b border-border bg-secondary/40">
+      {/* Metadata — Lokasi section */}
+      <div className="rounded-md border border-border bg-card flex-shrink-0">
+        <div className="px-3 py-1.5 border-b border-border bg-secondary/40">
           <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
-            <Info className="h-3 w-3" />
-            Metadata
+            <MapPin className="h-3 w-3" />
+            Lokasi
+          </span>
+        </div>
+        <div className="px-3 py-1">
+          <MetaRow label="Site" value={data.site} />
+          <MetaRow label="Lokasi" value={data.location} />
+          <MetaRow label="Detail Lokasi" value={data.detailLokasi} />
+          <MetaRow label="Keterangan" value={data.keteranganLokasi} />
+        </div>
+      </div>
+
+      {/* Metadata — Pelapor section */}
+      <div className="rounded-md border border-border bg-card flex-shrink-0">
+        <div className="px-3 py-1.5 border-b border-border bg-secondary/40">
+          <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+            <Users className="h-3 w-3" />
+            Pelapor
           </span>
         </div>
         <div className="px-3 py-1">
           <MetaRow label="Timestamp" value={data.timestamp} />
           <MetaRow label="Pelapor / PIC" value={data.pic} />
-          <MetaRow label="Site" value={data.site} />
-          <MetaRow label="Lokasi" value={data.location} />
-          <MetaRow label="Detail Lokasi" value={data.detailLokasi} />
-          <MetaRow label="Keterangan Lokasi" value={data.keteranganLokasi} />
+          <MetaRow label="PIC Perusahaan" value={data.picPerusahaan} />
         </div>
       </div>
 
       {/* Similarity Breakdown (only for comparison) */}
       {showSimilarity && (
-        <div className="rounded-md border border-border bg-card">
+        <div className="rounded-md border border-border bg-card flex-shrink-0">
           <div className="px-3 py-2 border-b border-border bg-secondary/40">
-            <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
-              <ClipboardList className="h-3 w-3" />
-              Similarity Breakdown
-            </span>
+            <span className="text-[11px] font-semibold text-muted-foreground">Similarity Breakdown</span>
           </div>
           <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
             <div className="px-3 py-2.5 text-center">
@@ -280,8 +306,10 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
               <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mt-0.5">Total</p>
             </div>
           </div>
-          <div className="px-3 py-2">
-            <p className="text-[11px] text-muted-foreground italic">"{showSimilarity.keterangan}"</p>
+          <div className="px-3 py-2 flex items-center justify-center">
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-semibold ${simLabelStyle(showSimilarity.simLabel)}`}>
+              {showSimilarity.simLabel}
+            </span>
           </div>
         </div>
       )}
@@ -302,13 +330,12 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
             </div>
             <div>
               <h2 className="text-sm font-bold text-foreground">Semantic Review</h2>
-              <p className="text-xs text-muted-foreground">{cluster.id} · {cluster.name}</p>
+              <p className="text-xs text-muted-foreground">{cluster.id}</p>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Pagination */}
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <button className="p-1 rounded hover:bg-secondary disabled:opacity-30" disabled={clusterIndex <= 0}>
               <ChevronLeft className="h-4 w-4" />
@@ -324,35 +351,34 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
         </div>
       </div>
 
-      {/* Metrics chips */}
-      <div className="flex items-center gap-3 px-5 py-2 border-b border-border bg-card">
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
-          ✦ Similarity {cluster.similarityAvg}%
-        </span>
-        <span className="text-xs text-muted-foreground">Total <strong className="text-foreground">{cluster.total}</strong></span>
-        <span className="text-xs">·</span>
-        <span className="text-xs text-destructive">Duplicate <strong>{cluster.duplicateCount}</strong></span>
-        <span className="text-xs">·</span>
-        <span className="text-xs text-pill-yellow-fg">Potential <strong>{cluster.potentialCount}</strong></span>
-        <span className="text-xs">·</span>
-        <span className="text-xs text-pill-blue-fg flex items-center gap-1">
-          <RefreshCw className="h-3 w-3" />
-          System <strong>{cluster.systemCount}</strong>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Info className="h-3 w-3 cursor-help text-muted-foreground" />
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="max-w-[260px] text-xs">
-              Auto-detected duplicate: high similarity + same reporter + timestamp delta ≤ 5s (or identical hash).
-            </TooltipContent>
-          </Tooltip>
-        </span>
+      {/* Metrics bar — enterprise style */}
+      <div className="grid grid-cols-5 divide-x divide-border border-b border-border bg-card">
+        <div className="px-4 py-2.5 text-center">
+          <p className="text-lg font-bold text-foreground tabular-nums">{cluster.similarityAvg}%</p>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Similarity</p>
+        </div>
+        <div className="px-4 py-2.5 text-center">
+          <p className="text-lg font-bold text-destructive tabular-nums">{cluster.duplicateCount}</p>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Duplicate</p>
+        </div>
+        <div className="px-4 py-2.5 text-center">
+          <p className="text-lg font-bold text-foreground tabular-nums">{cluster.potentialCount}</p>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Potential</p>
+        </div>
+        <div className="px-4 py-2.5 text-center">
+          <p className="text-lg font-bold text-primary tabular-nums">{cluster.systemCount}</p>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">System</p>
+        </div>
+        <div className="px-4 py-2.5 text-center">
+          <p className="text-lg font-bold text-foreground tabular-nums">{cluster.waitingCount}</p>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Waiting</p>
+        </div>
       </div>
 
       {/* Layout */}
       <div className="flex-1 min-h-0 flex">
         {/* LEFT — Representative */}
-        <div className={`${compact ? "w-1/2" : "w-[380px] min-w-[320px]"} border-r border-border flex flex-col`}>
+        <div className={`${compact ? "w-1/2" : "flex-1"} border-r border-border flex flex-col`}>
           <div className="px-3 py-1.5 border-b border-border bg-secondary/30">
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent text-accent-foreground text-[10px] font-semibold">
               <Star className="h-3 w-3" /> Representative
@@ -365,7 +391,7 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
         </div>
 
         {/* MIDDLE — Comparison */}
-        <div className={`${compact ? "w-1/2" : "flex-1 min-w-[280px]"} ${compact ? "" : "border-r border-border"} flex flex-col`}>
+        <div className={`${compact ? "w-1/2" : "flex-1"} ${compact ? "" : "border-r border-border"} flex flex-col`}>
           {selectedReport ? (
             <>
               <div className="px-4 py-2 border-b border-border bg-secondary/30 flex items-center justify-between">
@@ -375,8 +401,9 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
                 title="Laporan Pembanding"
                 data={{
                   fullId: selectedReport.fullId,
-                  timestamp: selectedReport.date,
+                  timestamp: `${selectedReport.date} ${selectedReport.timestamp}`,
                   pic: selectedReport.pic,
+                  picPerusahaan: selectedReport.picPerusahaan,
                   site: selectedReport.site,
                   location: selectedReport.location,
                   detailLokasi: selectedReport.detailLokasi,
@@ -398,29 +425,45 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
 
         {/* RIGHT — Similar Reports (hidden in compact mode) */}
         {!compact && (
-        <div className="w-[300px] min-w-[260px] flex flex-col bg-card">
+        <div className="w-[360px] min-w-[320px] flex flex-col bg-card">
           <div className="px-3 py-2 border-b border-border flex items-center justify-between">
             <h3 className="text-xs font-semibold">Laporan Mirip</h3>
-            <span className="text-[11px] text-muted-foreground">{filteredReports.length} laporan</span>
+            <span className="text-[11px] text-muted-foreground">{sortedReports.length} laporan</span>
           </div>
 
-          {/* Filter */}
-          <div className="px-3 py-1.5 border-b border-border">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full text-[11px] border border-border rounded-md px-2 py-1 bg-background text-foreground"
-            >
-              <option value="Semua">↕ Semua — Sort by Similarity</option>
-              <option value="Duplicate">Duplicate</option>
-              <option value="Potential">Potential Duplicate</option>
-              <option value="System">Duplicate by System</option>
-            </select>
+          {/* Sort + Filter bar */}
+          <div className="px-3 py-1.5 border-b border-border flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+              <select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value as "desc" | "asc")}
+                className="text-[11px] border border-border rounded px-1.5 py-0.5 bg-background text-foreground"
+              >
+                <option value="desc">Similarity ↓</option>
+                <option value="asc">Similarity ↑</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-1">
+              <Filter className="h-3 w-3 text-muted-foreground" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="text-[11px] border border-border rounded px-1.5 py-0.5 bg-background text-foreground"
+              >
+                <option value="Semua">Semua</option>
+                <option value="Duplicate">Duplicate</option>
+                <option value="Potential">Potential</option>
+                <option value="System">By System</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Waiting">Waiting</option>
+              </select>
+            </div>
           </div>
 
           {/* List */}
           <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
-            {filteredReports.map((report) => {
+            {sortedReports.map((report) => {
               const isSelected = selectedReportId === report.id;
               const isBukanExpanded = bukanExpandId === report.id;
               return (
@@ -433,27 +476,30 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId }
                       : "border-border hover:border-primary/30 hover:bg-secondary/50"
                   }`}
                 >
-                  <div className="flex gap-2">
-                    {/* Thumbnail */}
-                    <div className="h-10 w-10 rounded bg-secondary flex items-center justify-center flex-shrink-0 border border-border">
-                      <ImageIcon className="h-3.5 w-3.5 text-muted-foreground/40" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <span className="text-[11px] font-bold text-foreground">{report.fullId}</span>
-                          <p className="text-[10px] text-muted-foreground">{report.date} · {report.pic}</p>
-                        </div>
-                        <span className={`text-xs font-bold ${simColor(report.similarity)}`}>
-                          {report.similarity}%
-                        </span>
-                      </div>
-                      <div className="mt-0.5">
-                        <StatusBadge status={report.status} />
-                      </div>
-                      <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{report.description}</p>
-                    </div>
+                  {/* ID + similarity */}
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[11px] font-bold text-foreground">{report.fullId}</span>
+                    <span className={`text-xs font-bold ${simColor(report.similarity)}`}>
+                      {report.similarity}%
+                    </span>
                   </div>
+
+                  {/* Image + description side by side */}
+                  <div className="flex gap-2 mb-1.5">
+                    <div className="h-14 w-14 rounded bg-secondary flex items-center justify-center flex-shrink-0 border border-border">
+                      <ImageIcon className="h-4 w-4 text-muted-foreground/40" />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground line-clamp-3 flex-1">{report.description}</p>
+                  </div>
+
+                  {/* Metadata line */}
+                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-1.5">
+                    <span>{report.date} {report.timestamp}</span>
+                    <span>·</span>
+                    <span>{report.picPerusahaan}</span>
+                  </div>
+
+                  <StatusBadge status={report.status} />
 
                   {/* Auto-confirm countdown */}
                   {report.autoConfirmSeconds !== undefined && (
