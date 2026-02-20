@@ -1,7 +1,19 @@
 import { useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, X, Star, Copy, CheckCircle, XCircle, Clock, RefreshCw, Info, Image as ImageIcon, FileText, MapPin, Users, ArrowUpDown, Filter, ChevronDown } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, X, Star, Copy, CheckCircle, XCircle, Clock, RefreshCw, FileText, MapPin, Users, ArrowUpDown, Filter } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import hazardImg1 from "@/assets/dummy-hazard-1.jpg";
+import hazardImg2 from "@/assets/dummy-hazard-2.jpg";
+import hazardImg3 from "@/assets/dummy-hazard-3.jpg";
+import hazardImg4 from "@/assets/dummy-hazard-4.jpg";
+import hazardImg5 from "@/assets/dummy-hazard-5.jpg";
+
+const HAZARD_IMAGES = [hazardImg1, hazardImg2, hazardImg3, hazardImg4, hazardImg5];
+const getHazardImage = (id: string) => {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  return HAZARD_IMAGES[Math.abs(hash) % HAZARD_IMAGES.length];
+};
 
 // --- Types ---
 interface SimilarReport {
@@ -142,7 +154,6 @@ interface SemanticReviewProps {
   onBack: () => void;
   compact?: boolean;
   selectedHazardId?: string;
-  /** When opened from List Hazard, show cluster name and allow navigating to cluster semantic review */
   fromListHazard?: boolean;
   onNavigateToCluster?: (clusterId: string) => void;
 }
@@ -156,7 +167,7 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
     : cluster.reports[0]?.id ?? null;
 
   const [selectedReportId, setSelectedReportId] = useState<string | null>(initialReportId);
-  const [statusFilter, setStatusFilter] = useState<string>("Semua");
+  const [statusFilter, setStatusFilter] = useState<string>("All");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [bukanExpandId, setBukanExpandId] = useState<string | null>(null);
@@ -165,11 +176,9 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
   const selectedReport = cluster.reports.find((r) => r.id === selectedReportId) ?? null;
 
   const filteredReports = cluster.reports.filter((r) => {
-    if (statusFilter === "Semua") return true;
-    if (statusFilter === "Duplicate") return r.status === "Duplicate";
-    if (statusFilter === "Potential") return r.status === "Potential Duplicate";
-    if (statusFilter === "System") return r.status === "Duplicate by System";
-    if (statusFilter === "Confirmed") return r.status === "Confirmed";
+    if (statusFilter === "All") return true;
+    if (statusFilter === "Annotated") return r.status === "Duplicate" || r.status === "Potential Duplicate";
+    if (statusFilter === "Auto-confirm") return r.status === "Duplicate by System" || r.status === "Confirmed";
     if (statusFilter === "Waiting") return r.status === "Waiting";
     return true;
   });
@@ -193,7 +202,13 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
     return "bg-secondary text-muted-foreground border-border";
   };
 
-  // --- Metadata Row ---
+  const FILTER_OPTIONS = [
+    { key: "All", label: "All" },
+    { key: "Annotated", label: "Annotated by Human" },
+    { key: "Auto-confirm", label: "Auto-confirm" },
+    { key: "Waiting", label: "Waiting" },
+  ];
+
   const MetaRow = ({ label, value }: { label: string; value: string }) => (
     <div className="flex items-center justify-between py-1.5 border-b border-border last:border-b-0">
       <span className="text-[11px] text-muted-foreground">{label}</span>
@@ -201,7 +216,6 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
     </div>
   );
 
-  // --- Report Card (Left or Middle) ---
   const ReportCard = ({ title, badge, data, showSimilarity }: {
     title: string;
     badge?: React.ReactNode;
@@ -212,7 +226,7 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
     };
     showSimilarity?: SimilarReport | null;
   }) => (
-    <div className="flex flex-col h-full overflow-y-auto p-4 space-y-3">
+    <div className="flex flex-col h-full overflow-y-auto subtle-scroll p-4 space-y-3">
       {/* Title row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -221,19 +235,19 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
         </div>
         <button
           onClick={() => copyId(data.fullId)}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-primary/30 bg-primary/5 text-primary text-[10px] font-semibold hover:bg-primary/10 transition-colors"
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-card text-foreground text-[10px] font-semibold hover:bg-secondary transition-colors"
         >
           {data.fullId}
-          {copiedId === data.fullId ? <CheckCircle className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+          {copiedId === data.fullId ? <CheckCircle className="h-3 w-3 text-pill-green-fg" /> : <Copy className="h-3 w-3 text-muted-foreground" />}
         </button>
       </div>
 
-      {/* Image placeholder - fixed height */}
-      <div className="bg-secondary rounded-md h-[160px] flex items-center justify-center border border-border flex-shrink-0">
-        <ImageIcon className="h-8 w-8 text-muted-foreground/30" />
+      {/* Image */}
+      <div className="rounded-md h-[160px] flex-shrink-0 overflow-hidden border border-border">
+        <img src={getHazardImage(data.fullId)} alt="Hazard" className="w-full h-full object-cover" />
       </div>
 
-      {/* Deskripsi Temuan - fixed height with truncation */}
+      {/* Deskripsi Temuan */}
       <div className="rounded-md border border-border bg-card flex-shrink-0">
         <div className="px-3 py-2 border-b border-border bg-secondary/40">
           <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
@@ -246,7 +260,7 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
         </div>
       </div>
 
-      {/* Klasifikasi - no section title, just rows */}
+      {/* Klasifikasi */}
       <div className="rounded-md border border-border bg-card flex-shrink-0">
         <div className="px-3 py-1">
           <MetaRow label="Ketidaksesuaian" value={data.ketidaksesuaian} />
@@ -258,7 +272,7 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
         </div>
       </div>
 
-      {/* Metadata — Lokasi section */}
+      {/* Lokasi */}
       <div className="rounded-md border border-border bg-card flex-shrink-0">
         <div className="px-3 py-1.5 border-b border-border bg-secondary/40">
           <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
@@ -274,7 +288,7 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
         </div>
       </div>
 
-      {/* Metadata — Pelapor section */}
+      {/* Pelapor */}
       <div className="rounded-md border border-border bg-card flex-shrink-0">
         <div className="px-3 py-1.5 border-b border-border bg-secondary/40">
           <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
@@ -289,7 +303,7 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
         </div>
       </div>
 
-      {/* Similarity Breakdown (only for comparison) */}
+      {/* Similarity Breakdown */}
       {showSimilarity && (
         <div className="rounded-md border border-border bg-card flex-shrink-0">
           <div className="px-3 py-2 border-b border-border bg-secondary/40">
@@ -367,7 +381,7 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
         </div>
       </div>
 
-      {/* Metrics bar — enterprise style */}
+      {/* Metrics bar */}
       <div className="grid grid-cols-5 divide-x divide-border border-b border-border bg-card">
         <div className="px-4 py-2.5 text-center">
           <p className="text-lg font-bold text-foreground tabular-nums">{cluster.similarityAvg}%</p>
@@ -439,7 +453,7 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
           )}
         </div>
 
-        {/* RIGHT — Similar Reports (hidden in compact mode) */}
+        {/* RIGHT — Similar Reports */}
         {!compact && (
         <div className="w-[360px] min-w-[320px] flex flex-col bg-card">
           <div className="px-3 py-2 border-b border-border flex items-center justify-between">
@@ -447,38 +461,43 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
             <span className="text-[11px] text-muted-foreground">{sortedReports.length} laporan</span>
           </div>
 
-          {/* Sort + Filter bar */}
+          {/* Sort icon + Filter tabs */}
           <div className="px-3 py-1.5 border-b border-border flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
-              <select
-                value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value as "desc" | "asc")}
-                className="text-[11px] border border-border rounded px-1.5 py-0.5 bg-background text-foreground"
-              >
-                <option value="desc">Similarity ↓</option>
-                <option value="asc">Similarity ↑</option>
-              </select>
-            </div>
-            <div className="flex items-center gap-1">
-              <Filter className="h-3 w-3 text-muted-foreground" />
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="text-[11px] border border-border rounded px-1.5 py-0.5 bg-background text-foreground"
-              >
-                <option value="Semua">Semua</option>
-                <option value="Duplicate">Duplicate</option>
-                <option value="Potential">Potential</option>
-                <option value="System">By System</option>
-                <option value="Confirmed">Confirmed</option>
-                <option value="Waiting">Waiting</option>
-              </select>
+            {/* Sort toggle — icon only */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
+                  className={`p-1 rounded hover:bg-secondary transition-colors ${sortOrder === "asc" ? "text-primary" : "text-muted-foreground"}`}
+                >
+                  <ArrowUpDown className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="text-[10px]">Similarity {sortOrder === "desc" ? "↓ Tinggi ke Rendah" : "↑ Rendah ke Tinggi"}</TooltipContent>
+            </Tooltip>
+
+            <div className="h-3.5 w-px bg-border" />
+
+            {/* Filter tabs */}
+            <div className="flex items-center gap-1 flex-1 overflow-x-auto subtle-scroll">
+              {FILTER_OPTIONS.map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => setStatusFilter(opt.key)}
+                  className={`whitespace-nowrap px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors ${
+                    statusFilter === opt.key
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
 
           {/* List */}
-          <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
+          <div className="flex-1 overflow-y-auto subtle-scroll p-2 space-y-1.5">
             {sortedReports.map((report) => {
               const isSelected = selectedReportId === report.id;
               const isBukanExpanded = bukanExpandId === report.id;
@@ -500,15 +519,15 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
                     </span>
                   </div>
 
-                  {/* Image + description side by side */}
+                  {/* Image + description */}
                   <div className="flex gap-2 mb-1.5">
-                    <div className="h-14 w-14 rounded bg-secondary flex items-center justify-center flex-shrink-0 border border-border">
-                      <ImageIcon className="h-4 w-4 text-muted-foreground/40" />
+                    <div className="h-14 w-14 rounded flex-shrink-0 border border-border overflow-hidden">
+                      <img src={getHazardImage(report.fullId)} alt="Hazard" className="w-full h-full object-cover" />
                     </div>
                     <p className="text-[11px] text-muted-foreground line-clamp-3 flex-1">{report.description}</p>
                   </div>
 
-                  {/* Metadata line */}
+                  {/* Metadata */}
                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-1.5">
                     <span>{report.date} {report.timestamp}</span>
                     <span>·</span>
@@ -551,7 +570,7 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
                     </button>
                   </div>
 
-                  {/* Inline "Bukan Duplicate" reason */}
+                  {/* Bukan reason */}
                   {isBukanExpanded && (
                     <div className="mt-2 space-y-1.5" onClick={(e) => e.stopPropagation()}>
                       <textarea
