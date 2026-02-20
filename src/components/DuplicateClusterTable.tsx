@@ -285,7 +285,7 @@ const DuplicateClusterTable = ({
                       <td className="text-center text-xs font-medium">{row.jumlahPotentialDuplicate}</td>
                       <td className="text-center text-xs font-medium">{row.jumlahDuplicateBySystem}</td>
                       <td className="text-center text-xs">
-                        <div className="flex flex-col items-center gap-0.5">
+                        <div className="flex items-center justify-center gap-2">
                           <span className="font-medium">{row.jumlahWaiting}</span>
                           {row.jumlahWaiting > 0 && countdown > 0 && (
                             <span className="inline-flex items-center gap-0.5 text-[10px] text-pill-yellow-fg font-mono tabular-nums">
