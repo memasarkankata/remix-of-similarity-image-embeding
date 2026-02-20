@@ -35,30 +35,30 @@ const Index = () => {
   };
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
 
         <div className="flex flex-col flex-1 min-w-0">
           {/* Header */}
-          <header className="flex items-center justify-between px-5 py-2.5 bg-primary text-primary-foreground">
+          <header className="flex items-center justify-between px-5 py-2.5 bg-card text-foreground border-b border-border">
             <div className="flex items-center gap-3">
-              <SidebarTrigger className="text-primary-foreground hover:bg-primary-foreground/20 h-7 w-7" />
+              <SidebarTrigger className="text-foreground hover:bg-muted h-7 w-7" />
               <div>
                 <h1 className="text-sm font-bold leading-tight">BEATS Hazard Reporting System</h1>
                 <p className="text-[11px] opacity-80">Evaluator Dashboard v2.0</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <button className="inline-flex items-center gap-1.5 text-xs opacity-80 hover:opacity-100">
+              <button className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
                 <RefreshCw className="h-3.5 w-3.5" />
                 Sync Hazards
               </button>
-              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-primary-foreground/20">Evaluator</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-primary/10 text-primary">Evaluator</span>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium">FAUZAN AJI</span>
-                <div className="h-7 w-7 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-                  <User className="h-3.5 w-3.5" />
+                <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
+                  <User className="h-3.5 w-3.5 text-primary" />
                 </div>
               </div>
             </div>
