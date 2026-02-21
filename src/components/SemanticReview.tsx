@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, X, Star, Copy, CheckCircle, XCircle, Clock, RefreshCw, FileText, MapPin, Users, ArrowUpDown, Filter } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, X, Star, Copy, CheckCircle, XCircle, Clock, RefreshCw, FileText, MapPin, Users, ArrowUpDown, Filter, ImageIcon, Type } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import hazardImg1 from "@/assets/dummy-hazard-1.jpg";
@@ -252,10 +252,9 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
       <div className="relative rounded-md h-[160px] flex-shrink-0 overflow-hidden border border-border">
         <img src={getHazardImage(data.fullId)} alt="Hazard" className="w-full h-full object-cover" />
         {showSimilarity && showSimilarity.imageSim >= 60 && (
-          <span className={`absolute top-2 right-2 inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-semibold backdrop-blur-sm bg-white/80 ${
-            showSimilarity.simLabel.includes("Potential") ? "text-bar-orange border-bar-orange/30" : "text-destructive border-destructive/30"
-          }`}>
-            {showSimilarity.simLabel.includes("Potential") ? "Gambar Potential Mirip" : "Gambar Mirip"} · {showSimilarity.imageSim}%
+          <span className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-white/90 backdrop-blur-sm text-[10px] font-semibold text-foreground">
+            <ImageIcon className="h-3 w-3 text-muted-foreground" />
+            mirip · {showSimilarity.imageSim}%
           </span>
         )}
       </div>
@@ -268,10 +267,9 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
             Deskripsi Temuan
           </span>
           {showSimilarity && showSimilarity.textSim >= 60 && (
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-semibold ${
-              showSimilarity.simLabel.includes("Potential") ? "bg-bar-orange/10 text-bar-orange border-bar-orange/20" : "bg-primary/10 text-primary border-primary/20"
-            }`}>
-              {showSimilarity.simLabel.includes("Potential") ? "Text Potential Mirip" : "Text Mirip"} · {showSimilarity.textSim}%
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-card text-[10px] font-semibold text-foreground">
+              <Type className="h-3 w-3 text-muted-foreground" />
+              mirip · {showSimilarity.textSim}%
             </span>
           )}
         </div>
@@ -409,35 +407,6 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
         </div>
       )}
 
-      {/* Similarity Breakdown bar — show for both modes when a report is selected */}
-      {selectedReport && (
-        <div className="border-b border-border bg-card px-5 py-3">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-muted-foreground font-medium">Similarity Breakdown</span>
-            </div>
-            <div className="flex items-center gap-5">
-              <div className="flex items-center gap-1.5">
-                <span className={`text-sm font-bold tabular-nums ${simColor(selectedReport.totalSim)}`}>{selectedReport.totalSim}%</span>
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Total</span>
-              </div>
-              <div className="h-3.5 w-px bg-border" />
-              <div className="flex items-center gap-1.5">
-                <span className={`text-sm font-bold tabular-nums ${simColor(selectedReport.imageSim)}`}>{selectedReport.imageSim}%</span>
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Image</span>
-              </div>
-              <div className="h-3.5 w-px bg-border" />
-              <div className="flex items-center gap-1.5">
-                <span className={`text-sm font-bold tabular-nums ${simColor(selectedReport.textSim)}`}>{selectedReport.textSim}%</span>
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Text</span>
-              </div>
-            </div>
-            <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-semibold ${simLabelStyle(selectedReport.simLabel)}`}>
-              {selectedReport.simLabel}
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Layout */}
       <div className="flex-1 min-h-0 flex">
@@ -459,7 +428,22 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
           {selectedReport ? (
             <>
               <div className="px-4 py-2 border-b border-border bg-secondary/30 flex items-center justify-between">
-                <StatusBadge status={selectedReport.status} />
+                <div className="flex items-center gap-3">
+                  <StatusBadge status={selectedReport.status} />
+                  <div className="h-3.5 w-px bg-border" />
+                  <span className={`text-xs font-bold tabular-nums ${simColor(selectedReport.totalSim)}`}>{selectedReport.totalSim}%</span>
+                  <span className="text-[10px] text-muted-foreground">Total</span>
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <ImageIcon className="h-3 w-3" />
+                    <span className="text-[10px] font-medium">mirip</span>
+                    <span className={`text-[11px] font-bold tabular-nums ${simColor(selectedReport.imageSim)}`}>{selectedReport.imageSim}%</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <Type className="h-3 w-3" />
+                    <span className="text-[10px] font-medium">mirip</span>
+                    <span className={`text-[11px] font-bold tabular-nums ${simColor(selectedReport.textSim)}`}>{selectedReport.textSim}%</span>
+                  </div>
+                </div>
               </div>
               <ReportCard
                 title="Laporan Pembanding"
