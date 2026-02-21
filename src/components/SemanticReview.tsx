@@ -35,7 +35,7 @@ interface SimilarReport {
   imageSim: number;
   textSim: number;
   totalSim: number;
-  simLabel: "Gambar mirip" | "Text mirip" | "Gambar dan text mirip";
+  simLabel: "Gambar Mirip" | "Text Mirip" | "Gambar Potential Mirip" | "Text Potential Mirip";
   ketidaksesuaian: string;
   subKetidaksesuaian: string;
   quickAction: string;
@@ -100,7 +100,7 @@ const dummyClusters: ClusterInfo[] = [
         similarity: 89, autoConfirmSeconds: 58,
         site: "BMO 1", location: "Hauling Road", detailLokasi: "Gerbang Utama Site", keteranganLokasi: "(B 65) Area Gerbang",
         deskripsi: "HD melaju 40 km/jam melewati area gerbang utama mengurangi kecepatan hanya saat melewati pos security.",
-        imageSim: 72, textSim: 94, totalSim: 89, simLabel: "Gambar dan text mirip",
+        imageSim: 72, textSim: 94, totalSim: 89, simLabel: "Gambar Mirip",
         ketidaksesuaian: "Kelayakan/Penggunaan Tools", subKetidaksesuaian: "Kesesuaian penggunaan Supporting Tools", quickAction: "Safety Briefing",
       },
       {
@@ -110,7 +110,7 @@ const dummyClusters: ClusterInfo[] = [
         similarity: 86, autoConfirmSeconds: 58,
         site: "BMO 1", location: "Hauling Road", detailLokasi: "Gerbang Utama Site", keteranganLokasi: "(B 65) Area Gerbang",
         deskripsi: "Kendaraan LV melaju dengan kecepatan tinggi di area 30 km/jam tanpa mengurangi kecepatan sama sekali.",
-        imageSim: 68, textSim: 91, totalSim: 86, simLabel: "Text mirip",
+        imageSim: 68, textSim: 91, totalSim: 86, simLabel: "Text Mirip",
         ketidaksesuaian: "DDP : Kelayakan dan Pengoperasian Kendara…", subKetidaksesuaian: "Tidak menggunakan APD sesuai standard", quickAction: "Warning Letter",
       },
       {
@@ -120,7 +120,7 @@ const dummyClusters: ClusterInfo[] = [
         similarity: 84, autoConfirmSeconds: 58,
         site: "BMO 1", location: "Hauling Road", detailLokasi: "Gerbang Utama Site", keteranganLokasi: "(B 65) Area Gerbang",
         deskripsi: "Dump truck melintas gerbang dengan kecepatan 35 km/jam di zona 25 km/jam.",
-        imageSim: 60, textSim: 88, totalSim: 84, simLabel: "Text mirip",
+        imageSim: 60, textSim: 88, totalSim: 84, simLabel: "Text Potential Mirip",
         ketidaksesuaian: "Kelayakan/Penggunaan Tools", subKetidaksesuaian: "Kesesuaian penggunaan Supporting Tools", quickAction: "Safety Briefing",
       },
       {
@@ -130,7 +130,7 @@ const dummyClusters: ClusterInfo[] = [
         similarity: 83, autoConfirmSeconds: undefined,
         site: "BMO 1", location: "Hauling Road", detailLokasi: "Gerbang Utama Site", keteranganLokasi: "(B 65) Area Gerbang",
         deskripsi: "Driver LV tidak menggunakan seatbelt saat melintas gerbang.",
-        imageSim: 55, textSim: 82, totalSim: 83, simLabel: "Gambar mirip",
+        imageSim: 55, textSim: 82, totalSim: 83, simLabel: "Gambar Potential Mirip",
         ketidaksesuaian: "Kelayakan/Penggunaan Tools", subKetidaksesuaian: "Kesesuaian penggunaan Supporting Tools", quickAction: "Safety Briefing",
       },
       {
@@ -140,7 +140,7 @@ const dummyClusters: ClusterInfo[] = [
         similarity: 99, autoConfirmSeconds: 0,
         site: "BMO 1", location: "Hauling Road", detailLokasi: "Gerbang Utama Site", keteranganLokasi: "(B 65) Area Gerbang",
         deskripsi: "LV melaju dengan kecepatan 45 km/jam di area 30 km/jam.",
-        imageSim: 98, textSim: 100, totalSim: 99, simLabel: "Gambar dan text mirip",
+        imageSim: 98, textSim: 100, totalSim: 99, simLabel: "Text Mirip",
         ketidaksesuaian: "DDP : Kelayakan dan Pengoperasian Kendara…", subKetidaksesuaian: "Tidak menggunakan APD sesuai standard", quickAction: "Warning Letter",
       },
     ],
@@ -197,8 +197,10 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
     v >= 80 ? "text-destructive font-bold" : v >= 70 ? "text-bar-orange font-bold" : "text-muted-foreground font-semibold";
 
   const simLabelStyle = (label: string) => {
-    if (label === "Gambar dan text mirip") return "bg-destructive/10 text-destructive border-destructive/20";
-    if (label === "Text mirip") return "bg-primary/10 text-primary border-primary/20";
+    if (label === "Gambar Mirip") return "bg-destructive/10 text-destructive border-destructive/20";
+    if (label === "Text Mirip") return "bg-primary/10 text-primary border-primary/20";
+    if (label === "Gambar Potential Mirip") return "bg-bar-orange/10 text-bar-orange border-bar-orange/20";
+    if (label === "Text Potential Mirip") return "bg-accent text-accent-foreground border-border";
     return "bg-secondary text-muted-foreground border-border";
   };
 
@@ -348,17 +350,15 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
             <div>
               <h2 className="text-sm font-bold text-foreground">Semantic Review</h2>
               <div className="flex items-center gap-1.5">
-                <p className="text-xs text-muted-foreground">{cluster.id}</p>
-                {fromListHazard && (
-                  <>
-                    <span className="text-xs text-muted-foreground">·</span>
-                    <button
-                      onClick={() => onNavigateToCluster?.(cluster.id)}
-                      className="text-xs text-primary hover:underline font-medium"
-                    >
-                      {cluster.name}
-                    </button>
-                  </>
+                {fromListHazard ? (
+                  <button
+                    onClick={() => onNavigateToCluster?.(cluster.id)}
+                    className="text-xs text-primary hover:underline font-medium"
+                  >
+                    Cluster {cluster.id}
+                  </button>
+                ) : (
+                  <p className="text-xs text-muted-foreground">{cluster.id}</p>
                 )}
               </div>
             </div>
@@ -381,29 +381,61 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
         </div>
       </div>
 
-      {/* Metrics bar */}
-      <div className="grid grid-cols-5 divide-x divide-border border-b border-border bg-card">
-        <div className="px-4 py-2.5 text-center">
-          <p className="text-lg font-bold text-foreground tabular-nums">{cluster.similarityAvg}%</p>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Similarity</p>
+      {/* Metrics bar — only show when NOT from list hazard */}
+      {!fromListHazard && (
+        <div className="grid grid-cols-5 divide-x divide-border border-b border-border bg-card">
+          <div className="px-4 py-2.5 text-center">
+            <p className="text-lg font-bold text-foreground tabular-nums">{cluster.similarityAvg}%</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Similarity</p>
+          </div>
+          <div className="px-4 py-2.5 text-center">
+            <p className="text-lg font-bold text-destructive tabular-nums">{cluster.duplicateCount}</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Duplicate</p>
+          </div>
+          <div className="px-4 py-2.5 text-center">
+            <p className="text-lg font-bold text-foreground tabular-nums">{cluster.potentialCount}</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Potential</p>
+          </div>
+          <div className="px-4 py-2.5 text-center">
+            <p className="text-lg font-bold text-primary tabular-nums">{cluster.systemCount}</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">System</p>
+          </div>
+          <div className="px-4 py-2.5 text-center">
+            <p className="text-lg font-bold text-foreground tabular-nums">{cluster.waitingCount}</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Waiting</p>
+          </div>
         </div>
-        <div className="px-4 py-2.5 text-center">
-          <p className="text-lg font-bold text-destructive tabular-nums">{cluster.duplicateCount}</p>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Duplicate</p>
+      )}
+
+      {/* Similarity Breakdown bar — only show when from list hazard */}
+      {fromListHazard && selectedReport && (
+        <div className="border-b border-border bg-card px-5 py-3">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-muted-foreground font-medium">Similarity Breakdown</span>
+            </div>
+            <div className="flex items-center gap-5">
+              <div className="flex items-center gap-1.5">
+                <span className={`text-sm font-bold tabular-nums ${simColor(selectedReport.totalSim)}`}>{selectedReport.totalSim}%</span>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Total</span>
+              </div>
+              <div className="h-3.5 w-px bg-border" />
+              <div className="flex items-center gap-1.5">
+                <span className={`text-sm font-bold tabular-nums ${simColor(selectedReport.imageSim)}`}>{selectedReport.imageSim}%</span>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Image</span>
+              </div>
+              <div className="h-3.5 w-px bg-border" />
+              <div className="flex items-center gap-1.5">
+                <span className={`text-sm font-bold tabular-nums ${simColor(selectedReport.textSim)}`}>{selectedReport.textSim}%</span>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Text</span>
+              </div>
+            </div>
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-semibold ${simLabelStyle(selectedReport.simLabel)}`}>
+              {selectedReport.simLabel}
+            </span>
+          </div>
         </div>
-        <div className="px-4 py-2.5 text-center">
-          <p className="text-lg font-bold text-foreground tabular-nums">{cluster.potentialCount}</p>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Potential</p>
-        </div>
-        <div className="px-4 py-2.5 text-center">
-          <p className="text-lg font-bold text-primary tabular-nums">{cluster.systemCount}</p>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">System</p>
-        </div>
-        <div className="px-4 py-2.5 text-center">
-          <p className="text-lg font-bold text-foreground tabular-nums">{cluster.waitingCount}</p>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Waiting</p>
-        </div>
-      </div>
+      )}
 
       {/* Layout */}
       <div className="flex-1 min-h-0 flex">
