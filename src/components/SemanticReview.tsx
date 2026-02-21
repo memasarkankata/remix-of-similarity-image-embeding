@@ -249,17 +249,31 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
       </div>
 
       {/* Image */}
-      <div className="rounded-md h-[160px] flex-shrink-0 overflow-hidden border border-border">
+      <div className="relative rounded-md h-[160px] flex-shrink-0 overflow-hidden border border-border">
         <img src={getHazardImage(data.fullId)} alt="Hazard" className="w-full h-full object-cover" />
+        {showSimilarity && showSimilarity.imageSim >= 60 && (
+          <span className={`absolute top-2 right-2 inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-semibold backdrop-blur-sm bg-white/80 ${
+            showSimilarity.simLabel.includes("Potential") ? "text-bar-orange border-bar-orange/30" : "text-destructive border-destructive/30"
+          }`}>
+            {showSimilarity.simLabel.includes("Potential") ? "Gambar Potential Mirip" : "Gambar Mirip"} · {showSimilarity.imageSim}%
+          </span>
+        )}
       </div>
 
       {/* Deskripsi Temuan */}
       <div className="rounded-md border border-border bg-card flex-shrink-0">
-        <div className="px-3 py-2 border-b border-border bg-secondary/40">
+        <div className="px-3 py-2 border-b border-border bg-secondary/40 flex items-center justify-between">
           <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
             <FileText className="h-3 w-3" />
             Deskripsi Temuan
           </span>
+          {showSimilarity && showSimilarity.textSim >= 60 && (
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-semibold ${
+              showSimilarity.simLabel.includes("Potential") ? "bg-bar-orange/10 text-bar-orange border-bar-orange/20" : "bg-primary/10 text-primary border-primary/20"
+            }`}>
+              {showSimilarity.simLabel.includes("Potential") ? "Text Potential Mirip" : "Text Mirip"} · {showSimilarity.textSim}%
+            </span>
+          )}
         </div>
         <div className="px-3 py-2.5 h-[52px] overflow-hidden">
           <p className="text-xs leading-relaxed text-foreground line-clamp-2">{data.deskripsi}</p>
@@ -309,33 +323,6 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
         </div>
       </div>
 
-      {/* Similarity Breakdown */}
-      {showSimilarity && (
-        <div className="rounded-md border border-border bg-card flex-shrink-0">
-          <div className="px-3 py-2 border-b border-border bg-secondary/40">
-            <span className="text-[11px] font-semibold text-muted-foreground">Similarity Breakdown</span>
-          </div>
-          <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
-            <div className="px-3 py-2.5 text-center">
-              <p className={`text-sm font-bold tabular-nums ${simColor(showSimilarity.imageSim)}`}>{showSimilarity.imageSim}</p>
-              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mt-0.5">Image</p>
-            </div>
-            <div className="px-3 py-2.5 text-center">
-              <p className={`text-sm font-bold tabular-nums ${simColor(showSimilarity.textSim)}`}>{showSimilarity.textSim}</p>
-              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mt-0.5">Text</p>
-            </div>
-            <div className="px-3 py-2.5 text-center">
-              <p className={`text-sm font-bold tabular-nums ${simColor(showSimilarity.totalSim)}`}>{showSimilarity.totalSim}</p>
-              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mt-0.5">Total</p>
-            </div>
-          </div>
-          <div className="px-3 py-2 flex items-center justify-center">
-            <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-semibold ${simLabelStyle(showSimilarity.simLabel)}`}>
-              {showSimilarity.simLabel}
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 
