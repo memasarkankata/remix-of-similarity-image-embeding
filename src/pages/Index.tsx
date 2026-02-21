@@ -110,7 +110,7 @@ const Index = () => {
       {semanticClusterId && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] transition-opacity"
+            className="fixed inset-0 z-40 bg-black/10 transition-opacity"
             onClick={handleClosePanel}
           />
           <div

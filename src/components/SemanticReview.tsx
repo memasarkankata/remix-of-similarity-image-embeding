@@ -156,9 +156,13 @@ interface SemanticReviewProps {
   selectedHazardId?: string;
   fromListHazard?: boolean;
   onNavigateToCluster?: (clusterId: string) => void;
+  onNavigatePrev?: () => void;
+  onNavigateNext?: () => void;
+  canNavigatePrev?: boolean;
+  canNavigateNext?: boolean;
 }
 
-const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, fromListHazard = false, onNavigateToCluster }: SemanticReviewProps) => {
+const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, fromListHazard = false, onNavigateToCluster, onNavigatePrev, onNavigateNext, canNavigatePrev = false, canNavigateNext = false }: SemanticReviewProps) => {
   const clusterIndex = clusterIds.indexOf(clusterId);
   const cluster = dummyClusters.find((c) => c.id === clusterId) ?? dummyClusters[0];
 
@@ -366,15 +370,26 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <button className="p-1 rounded hover:bg-secondary disabled:opacity-30" disabled={clusterIndex <= 0}>
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <span className="min-w-[30px] text-center font-medium">{clusterIndex + 1} / {clusterIds.length}</span>
-            <button className="p-1 rounded hover:bg-secondary disabled:opacity-30" disabled={clusterIndex >= clusterIds.length - 1}>
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
+          {(onNavigatePrev || onNavigateNext) ? (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <button onClick={onNavigatePrev} className="p-1 rounded hover:bg-secondary disabled:opacity-30" disabled={!canNavigatePrev}>
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button onClick={onNavigateNext} className="p-1 rounded hover:bg-secondary disabled:opacity-30" disabled={!canNavigateNext}>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <button className="p-1 rounded hover:bg-secondary disabled:opacity-30" disabled={clusterIndex <= 0}>
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="min-w-[30px] text-center font-medium">{clusterIndex + 1} / {clusterIds.length}</span>
+              <button className="p-1 rounded hover:bg-secondary disabled:opacity-30" disabled={clusterIndex >= clusterIds.length - 1}>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
           <button onClick={onBack} className="p-1.5 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
@@ -407,8 +422,8 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
         </div>
       )}
 
-      {/* Similarity Breakdown bar — only show when from list hazard */}
-      {fromListHazard && selectedReport && (
+      {/* Similarity Breakdown bar — show for both modes when a report is selected */}
+      {selectedReport && (
         <div className="border-b border-border bg-card px-5 py-3">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
