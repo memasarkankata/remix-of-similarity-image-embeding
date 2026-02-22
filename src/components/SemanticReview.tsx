@@ -272,18 +272,22 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
         </button>
       </div>
 
-      {/* Image */}
-      <div className="relative rounded-md h-[160px] flex-shrink-0 overflow-hidden border border-border group cursor-pointer" onClick={() => setExpandedImage(getHazardImage(data.fullId))}>
-        <img src={getHazardImage(data.fullId)} alt="Hazard" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-          <Maximize2 className="h-5 w-5 text-white opacity-0 group-hover:opacity-80 transition-opacity drop-shadow-md" />
+      {/* Image — inline expand, pushes content down */}
+      <div className="rounded-md flex-shrink-0 overflow-hidden border border-border">
+        <div className={`relative ${expandedImage === getHazardImage(data.fullId) ? "" : "h-[160px]"} overflow-hidden group cursor-pointer`} onClick={() => setExpandedImage(expandedImage === getHazardImage(data.fullId) ? null : getHazardImage(data.fullId))}>
+          <img src={getHazardImage(data.fullId)} alt="Hazard" className={`w-full object-cover transition-all duration-300 ${expandedImage === getHazardImage(data.fullId) ? "max-h-[500px] object-contain" : "h-[160px] object-cover"}`} />
+          {expandedImage !== getHazardImage(data.fullId) && (
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+              <Maximize2 className="h-5 w-5 text-white opacity-0 group-hover:opacity-80 transition-opacity drop-shadow-md" />
+            </div>
+          )}
+          {showSimilarity && showSimilarity.imageSim >= 60 && (
+            <span className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-white/90 backdrop-blur-sm text-[10px] font-semibold text-foreground">
+              <ImageIcon className="h-3 w-3 text-muted-foreground" />
+              mirip · {showSimilarity.imageSim}%
+            </span>
+          )}
         </div>
-        {showSimilarity && showSimilarity.imageSim >= 60 && (
-          <span className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-white/90 backdrop-blur-sm text-[10px] font-semibold text-foreground">
-            <ImageIcon className="h-3 w-3 text-muted-foreground" />
-            mirip · {showSimilarity.imageSim}%
-          </span>
-        )}
       </div>
 
       {/* Deskripsi Temuan */}
@@ -512,63 +516,58 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
             <span className="text-[11px] text-muted-foreground">{sortedReports.length} laporan</span>
           </div>
 
-          {/* Sort icons + Filter tabs */}
-          <div className="px-3 py-1.5 border-b border-border flex flex-col gap-1.5">
-            {/* Sort row */}
-            <div className="flex items-center gap-1">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => { setSortField("similarity"); setSortOrder(sortField === "similarity" && sortOrder === "desc" ? "asc" : "desc"); }}
-                    className={`p-1 rounded hover:bg-secondary transition-colors ${sortField === "similarity" ? "text-primary bg-primary/10" : "text-muted-foreground"}`}
-                  >
-                    <ArrowUpDown className="h-3.5 w-3.5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent className="text-[10px]">Sort by Similarity</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => { setSortField("time"); setSortOrder(sortField === "time" && sortOrder === "desc" ? "asc" : "desc"); }}
-                    className={`p-1 rounded hover:bg-secondary transition-colors ${sortField === "time" ? "text-primary bg-primary/10" : "text-muted-foreground"}`}
-                  >
-                    <Timer className="h-3.5 w-3.5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent className="text-[10px]">Sort by Auto-confirm Time</TooltipContent>
-              </Tooltip>
-
-              <div className="h-3.5 w-px bg-border mx-1" />
-
-              {/* Status filter tabs */}
-              <div className="flex items-center gap-1 flex-1 overflow-x-auto subtle-scroll">
-                {STATUS_FILTER_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.key}
-                    onClick={() => setStatusFilter(opt.key)}
-                    className={`whitespace-nowrap px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors ${
-                      statusFilter === opt.key
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Type filter row */}
-            <div className="flex items-center gap-1 overflow-x-auto subtle-scroll">
-              {TYPE_FILTER_OPTIONS.map((opt) => (
+          {/* Sort + Filter — single compact row */}
+          <div className="px-3 py-1.5 border-b border-border flex items-center gap-1">
+            {/* Sort icons */}
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <button
-                  key={opt.key}
-                  onClick={() => setTypeFilter(opt.key)}
-                  className={`whitespace-nowrap px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${
+                  onClick={() => { setSortField("similarity"); setSortOrder(sortField === "similarity" && sortOrder === "desc" ? "asc" : "desc"); }}
+                  className={`p-1 rounded hover:bg-secondary transition-colors ${sortField === "similarity" ? "text-primary bg-primary/10" : "text-muted-foreground"}`}
+                >
+                  <ArrowUpDown className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="text-[10px]">Similarity</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => { setSortField("time"); setSortOrder(sortField === "time" && sortOrder === "desc" ? "asc" : "desc"); }}
+                  className={`p-1 rounded hover:bg-secondary transition-colors ${sortField === "time" ? "text-primary bg-primary/10" : "text-muted-foreground"}`}
+                >
+                  <Timer className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="text-[10px]">Auto-confirm</TooltipContent>
+            </Tooltip>
+
+            <div className="h-3.5 w-px bg-border mx-0.5" />
+
+            {/* All filters in one row */}
+            <div className="flex items-center gap-0.5 flex-1 overflow-x-auto subtle-scroll">
+              {STATUS_FILTER_OPTIONS.map((opt) => (
+                <button
+                  key={`s-${opt.key}`}
+                  onClick={() => setStatusFilter(opt.key)}
+                  className={`whitespace-nowrap px-1.5 py-0.5 rounded-full text-[9px] font-medium transition-colors ${
+                    statusFilter === opt.key
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-secondary"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+              <div className="h-3 w-px bg-border mx-0.5 flex-shrink-0" />
+              {TYPE_FILTER_OPTIONS.filter(o => o.key !== "All").map((opt) => (
+                <button
+                  key={`t-${opt.key}`}
+                  onClick={() => setTypeFilter(typeFilter === opt.key ? "All" : opt.key)}
+                  className={`whitespace-nowrap px-1.5 py-0.5 rounded-full text-[9px] font-medium transition-colors ${
                     typeFilter === opt.key
-                      ? "border-primary/30 bg-primary/10 text-primary"
-                      : "border-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      ? "bg-accent text-primary border border-primary/20"
+                      : "text-muted-foreground hover:bg-secondary"
                   }`}
                 >
                   {opt.label}
@@ -678,21 +677,6 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
         </div>
         )}
       </div>
-
-      {/* Full-size image modal */}
-      {expandedImage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setExpandedImage(null)}>
-          <div className="relative max-w-[90vw] max-h-[90vh]">
-            <img src={expandedImage} alt="Hazard full" className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" />
-            <button
-              onClick={() => setExpandedImage(null)}
-              className="absolute top-3 right-3 p-1.5 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

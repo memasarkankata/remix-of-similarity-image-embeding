@@ -285,10 +285,12 @@ const DuplicateClusterTable = ({
                       <td className="text-center text-xs font-medium">{row.jumlahPotentialDuplicate}</td>
                       <td className="text-center text-xs font-medium">{row.jumlahDuplicateBySystem}</td>
                       <td className="text-center text-xs">
-                        <div className="flex items-center justify-center gap-2">
-                          <span className="font-medium">{row.jumlahWaiting}</span>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <span className="font-medium tabular-nums w-4 text-right">{row.jumlahWaiting}</span>
                           {row.jumlahWaiting > 0 && countdown > 0 && (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] text-pill-yellow-fg font-mono tabular-nums">
+                            <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono tabular-nums ${
+                              countdown < 600 ? "text-destructive" : countdown < 1800 ? "text-bar-orange" : countdown < 3600 ? "text-pill-yellow-fg" : "text-muted-foreground"
+                            }`}>
                               <Clock className="h-2.5 w-2.5" />
                               {formatCountdown(countdown)}
                             </span>
