@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, X, Star, Copy, CheckCircle, XCircle, Clock, RefreshCw, FileText, MapPin, Users, ArrowUpDown, Filter, ImageIcon, Type, Database, Timer, Maximize2 } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, X, Star, Copy, CheckCircle, XCircle, Clock, RefreshCw, FileText, MapPin, Users, ArrowUpDown, Filter, ImageIcon, Type, Database, Timer, Maximize2, ChevronDown, ArrowDown, ArrowUp } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import hazardImg1 from "@/assets/dummy-hazard-1.jpg";
@@ -173,8 +173,10 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
   const [selectedReportId, setSelectedReportId] = useState<string | null>(initialReportId);
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [typeFilter, setTypeFilter] = useState<string>("All");
-  const [sortField, setSortField] = useState<"similarity" | "time">("similarity");
+  const [sortField, setSortField] = useState<"similarity" | "time" | null>("similarity");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
+  const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [bukanExpandId, setBukanExpandId] = useState<string | null>(null);
   const [bukanReason, setBukanReason] = useState("");
@@ -199,14 +201,25 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
   });
 
   const sortedReports = [...filteredReports].sort((a, b) => {
+    if (!sortField) return 0;
     if (sortField === "similarity") {
       return sortOrder === "desc" ? b.similarity - a.similarity : a.similarity - b.similarity;
     }
-    // sort by time (autoConfirmSeconds)
     const aTime = a.autoConfirmSeconds ?? 0;
     const bTime = b.autoConfirmSeconds ?? 0;
     return sortOrder === "desc" ? bTime - aTime : aTime - bTime;
   });
+
+  const cycleSortField = (field: "similarity" | "time") => {
+    if (sortField === field && sortOrder === "desc") {
+      setSortOrder("asc");
+    } else if (sortField === field && sortOrder === "asc") {
+      setSortField(null);
+    } else {
+      setSortField(field);
+      setSortOrder("desc");
+    }
+  };
 
   const copyId = (id: string) => {
     navigator.clipboard.writeText(id);
@@ -516,63 +529,92 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
             <span className="text-[11px] text-muted-foreground">{sortedReports.length} laporan</span>
           </div>
 
-          {/* Sort + Filter — single compact row */}
-          <div className="px-3 py-1.5 border-b border-border flex items-center gap-1">
-            {/* Sort icons */}
+          {/* Sort + Filter toolbar */}
+          <div className="px-3 py-1.5 border-b border-border flex items-center gap-1.5">
+            {/* Sort: Similarity — tri-state */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  onClick={() => { setSortField("similarity"); setSortOrder(sortField === "similarity" && sortOrder === "desc" ? "asc" : "desc"); }}
+                  onClick={() => cycleSortField("similarity")}
                   className={`p-1 rounded hover:bg-secondary transition-colors ${sortField === "similarity" ? "text-primary bg-primary/10" : "text-muted-foreground"}`}
                 >
-                  <ArrowUpDown className="h-3.5 w-3.5" />
+                  {sortField === "similarity" ? (sortOrder === "desc" ? <ArrowDown className="h-3.5 w-3.5" /> : <ArrowUp className="h-3.5 w-3.5" />) : <ArrowUpDown className="h-3.5 w-3.5" />}
                 </button>
               </TooltipTrigger>
-              <TooltipContent className="text-[10px]">Similarity</TooltipContent>
+              <TooltipContent className="text-[10px]">Similarity {sortField === "similarity" ? (sortOrder === "desc" ? "↓" : "↑") : ""}</TooltipContent>
             </Tooltip>
+
+            {/* Sort: Time — tri-state */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  onClick={() => { setSortField("time"); setSortOrder(sortField === "time" && sortOrder === "desc" ? "asc" : "desc"); }}
+                  onClick={() => cycleSortField("time")}
                   className={`p-1 rounded hover:bg-secondary transition-colors ${sortField === "time" ? "text-primary bg-primary/10" : "text-muted-foreground"}`}
                 >
-                  <Timer className="h-3.5 w-3.5" />
+                  {sortField === "time" ? (sortOrder === "desc" ? <ArrowDown className="h-3.5 w-3.5" /> : <ArrowUp className="h-3.5 w-3.5" />) : <Timer className="h-3.5 w-3.5" />}
                 </button>
               </TooltipTrigger>
-              <TooltipContent className="text-[10px]">Auto-confirm</TooltipContent>
+              <TooltipContent className="text-[10px]">Auto-confirm {sortField === "time" ? (sortOrder === "desc" ? "↓" : "↑") : ""}</TooltipContent>
             </Tooltip>
 
-            <div className="h-3.5 w-px bg-border mx-0.5" />
+            <div className="h-3.5 w-px bg-border" />
 
-            {/* All filters in one row */}
-            <div className="flex items-center gap-0.5 flex-1 overflow-x-auto subtle-scroll">
-              {STATUS_FILTER_OPTIONS.map((opt) => (
-                <button
-                  key={`s-${opt.key}`}
-                  onClick={() => setStatusFilter(opt.key)}
-                  className={`whitespace-nowrap px-1.5 py-0.5 rounded-full text-[9px] font-medium transition-colors ${
-                    statusFilter === opt.key
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-secondary"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-              <div className="h-3 w-px bg-border mx-0.5 flex-shrink-0" />
-              {TYPE_FILTER_OPTIONS.filter(o => o.key !== "All").map((opt) => (
-                <button
-                  key={`t-${opt.key}`}
-                  onClick={() => setTypeFilter(typeFilter === opt.key ? "All" : opt.key)}
-                  className={`whitespace-nowrap px-1.5 py-0.5 rounded-full text-[9px] font-medium transition-colors ${
-                    typeFilter === opt.key
-                      ? "bg-accent text-primary border border-primary/20"
-                      : "text-muted-foreground hover:bg-secondary"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+            {/* Status dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => { setStatusDropdownOpen(!statusDropdownOpen); setTypeDropdownOpen(false); }}
+                className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-[10px] font-medium transition-colors ${
+                  statusFilter !== "All" ? "border-primary/30 bg-primary/5 text-primary" : "border-border bg-card text-foreground"
+                }`}
+              >
+                {STATUS_FILTER_OPTIONS.find(o => o.key === statusFilter)?.label ?? "All"}
+                <ChevronDown className="h-3 w-3 text-muted-foreground" />
+              </button>
+              {statusDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setStatusDropdownOpen(false)} />
+                  <div className="absolute left-0 top-full mt-1 z-40 bg-card border border-border rounded-md shadow-lg py-1 min-w-[120px]">
+                    {STATUS_FILTER_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.key}
+                        onClick={() => { setStatusFilter(opt.key); setStatusDropdownOpen(false); }}
+                        className={`w-full text-left px-3 py-1.5 text-[10px] hover:bg-secondary transition-colors ${statusFilter === opt.key ? "font-semibold text-primary" : "text-foreground"}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Type dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => { setTypeDropdownOpen(!typeDropdownOpen); setStatusDropdownOpen(false); }}
+                className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-[10px] font-medium transition-colors ${
+                  typeFilter !== "All" ? "border-primary/30 bg-primary/5 text-primary" : "border-border bg-card text-foreground"
+                }`}
+              >
+                {TYPE_FILTER_OPTIONS.find(o => o.key === typeFilter)?.label ?? "All"}
+                <ChevronDown className="h-3 w-3 text-muted-foreground" />
+              </button>
+              {typeDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setTypeDropdownOpen(false)} />
+                  <div className="absolute left-0 top-full mt-1 z-40 bg-card border border-border rounded-md shadow-lg py-1 min-w-[140px]">
+                    {TYPE_FILTER_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.key}
+                        onClick={() => { setTypeFilter(opt.key); setTypeDropdownOpen(false); }}
+                        className={`w-full text-left px-3 py-1.5 text-[10px] hover:bg-secondary transition-colors ${typeFilter === opt.key ? "font-semibold text-primary" : "text-foreground"}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
