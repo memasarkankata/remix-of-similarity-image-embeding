@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, X, Star, Copy, CheckCircle, XCircle, Clock, RefreshCw, FileText, MapPin, Users, ArrowUpDown, Filter, ImageIcon, Type } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, X, Star, Copy, CheckCircle, XCircle, Clock, RefreshCw, FileText, MapPin, Users, ArrowUpDown, Filter, ImageIcon, Type, Database, Timer, Maximize2 } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import hazardImg1 from "@/assets/dummy-hazard-1.jpg";
@@ -172,24 +172,41 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
 
   const [selectedReportId, setSelectedReportId] = useState<string | null>(initialReportId);
   const [statusFilter, setStatusFilter] = useState<string>("All");
+  const [typeFilter, setTypeFilter] = useState<string>("All");
+  const [sortField, setSortField] = useState<"similarity" | "time">("similarity");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [bukanExpandId, setBukanExpandId] = useState<string | null>(null);
   const [bukanReason, setBukanReason] = useState("");
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
 
   const selectedReport = cluster.reports.find((r) => r.id === selectedReportId) ?? null;
 
   const filteredReports = cluster.reports.filter((r) => {
-    if (statusFilter === "All") return true;
-    if (statusFilter === "Annotated") return r.status === "Duplicate" || r.status === "Potential Duplicate";
-    if (statusFilter === "Auto-confirm") return r.status === "Duplicate by System" || r.status === "Confirmed";
-    if (statusFilter === "Waiting") return r.status === "Waiting";
+    // Status filter
+    if (statusFilter !== "All") {
+      if (statusFilter === "Annotated" && r.status !== "Duplicate" && r.status !== "Potential Duplicate") return false;
+      if (statusFilter === "Auto-confirm" && r.status !== "Duplicate by System" && r.status !== "Confirmed") return false;
+      if (statusFilter === "Waiting" && r.status !== "Waiting") return false;
+    }
+    // Type filter
+    if (typeFilter !== "All") {
+      if (typeFilter === "Duplicate" && r.status !== "Duplicate") return false;
+      if (typeFilter === "Potential" && r.status !== "Potential Duplicate") return false;
+      if (typeFilter === "System" && r.status !== "Duplicate by System") return false;
+    }
     return true;
   });
 
-  const sortedReports = [...filteredReports].sort((a, b) =>
-    sortOrder === "desc" ? b.similarity - a.similarity : a.similarity - b.similarity
-  );
+  const sortedReports = [...filteredReports].sort((a, b) => {
+    if (sortField === "similarity") {
+      return sortOrder === "desc" ? b.similarity - a.similarity : a.similarity - b.similarity;
+    }
+    // sort by time (autoConfirmSeconds)
+    const aTime = a.autoConfirmSeconds ?? 0;
+    const bTime = b.autoConfirmSeconds ?? 0;
+    return sortOrder === "desc" ? bTime - aTime : aTime - bTime;
+  });
 
   const copyId = (id: string) => {
     navigator.clipboard.writeText(id);
@@ -208,11 +225,18 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
     return "bg-secondary text-muted-foreground border-border";
   };
 
-  const FILTER_OPTIONS = [
+  const STATUS_FILTER_OPTIONS = [
+    { key: "All", icon: null, label: "All" },
+    { key: "Annotated", icon: Users, label: "Annotated" },
+    { key: "Auto-confirm", icon: Timer, label: "Auto" },
+    { key: "Waiting", icon: Clock, label: "Waiting" },
+  ];
+
+  const TYPE_FILTER_OPTIONS = [
     { key: "All", label: "All" },
-    { key: "Annotated", label: "Annotated by Human" },
-    { key: "Auto-confirm", label: "Auto-confirm" },
-    { key: "Waiting", label: "Waiting" },
+    { key: "Duplicate", label: "Duplicate" },
+    { key: "Potential", label: "Potential" },
+    { key: "System", label: "By System" },
   ];
 
   const MetaRow = ({ label, value }: { label: string; value: string }) => (
@@ -249,8 +273,11 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
       </div>
 
       {/* Image */}
-      <div className="relative rounded-md h-[160px] flex-shrink-0 overflow-hidden border border-border">
+      <div className="relative rounded-md h-[160px] flex-shrink-0 overflow-hidden border border-border group cursor-pointer" onClick={() => setExpandedImage(getHazardImage(data.fullId))}>
         <img src={getHazardImage(data.fullId)} alt="Hazard" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+          <Maximize2 className="h-5 w-5 text-white opacity-0 group-hover:opacity-80 transition-opacity drop-shadow-md" />
+        </div>
         {showSimilarity && showSimilarity.imageSim >= 60 && (
           <span className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-white/90 backdrop-blur-sm text-[10px] font-semibold text-foreground">
             <ImageIcon className="h-3 w-3 text-muted-foreground" />
@@ -306,13 +333,19 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
         </div>
       </div>
 
-      {/* Pelapor */}
+      {/* Metadata (Pelapor) */}
       <div className="rounded-md border border-border bg-card flex-shrink-0">
-        <div className="px-3 py-1.5 border-b border-border bg-secondary/40">
+        <div className="px-3 py-1.5 border-b border-border bg-secondary/40 flex items-center justify-between">
           <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
-            <Users className="h-3 w-3" />
-            Pelapor
+            <Database className="h-3 w-3" />
+            Metadata
           </span>
+          {showSimilarity && showSimilarity.status === "Duplicate by System" && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-card text-[10px] font-semibold text-foreground">
+              <Database className="h-3 w-3 text-muted-foreground" />
+              mirip
+            </span>
+          )}
         </div>
         <div className="px-3 py-1">
           <MetaRow label="Timestamp" value={data.timestamp} />
@@ -479,33 +512,63 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
             <span className="text-[11px] text-muted-foreground">{sortedReports.length} laporan</span>
           </div>
 
-          {/* Sort icon + Filter tabs */}
-          <div className="px-3 py-1.5 border-b border-border flex items-center gap-2">
-            {/* Sort toggle — icon only */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
-                  className={`p-1 rounded hover:bg-secondary transition-colors ${sortOrder === "asc" ? "text-primary" : "text-muted-foreground"}`}
-                >
-                  <ArrowUpDown className="h-3.5 w-3.5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent className="text-[10px]">Similarity {sortOrder === "desc" ? "↓ Tinggi ke Rendah" : "↑ Rendah ke Tinggi"}</TooltipContent>
-            </Tooltip>
+          {/* Sort icons + Filter tabs */}
+          <div className="px-3 py-1.5 border-b border-border flex flex-col gap-1.5">
+            {/* Sort row */}
+            <div className="flex items-center gap-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => { setSortField("similarity"); setSortOrder(sortField === "similarity" && sortOrder === "desc" ? "asc" : "desc"); }}
+                    className={`p-1 rounded hover:bg-secondary transition-colors ${sortField === "similarity" ? "text-primary bg-primary/10" : "text-muted-foreground"}`}
+                  >
+                    <ArrowUpDown className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent className="text-[10px]">Sort by Similarity</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => { setSortField("time"); setSortOrder(sortField === "time" && sortOrder === "desc" ? "asc" : "desc"); }}
+                    className={`p-1 rounded hover:bg-secondary transition-colors ${sortField === "time" ? "text-primary bg-primary/10" : "text-muted-foreground"}`}
+                  >
+                    <Timer className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent className="text-[10px]">Sort by Auto-confirm Time</TooltipContent>
+              </Tooltip>
 
-            <div className="h-3.5 w-px bg-border" />
+              <div className="h-3.5 w-px bg-border mx-1" />
 
-            {/* Filter tabs */}
-            <div className="flex items-center gap-1 flex-1 overflow-x-auto subtle-scroll">
-              {FILTER_OPTIONS.map((opt) => (
+              {/* Status filter tabs */}
+              <div className="flex items-center gap-1 flex-1 overflow-x-auto subtle-scroll">
+                {STATUS_FILTER_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => setStatusFilter(opt.key)}
+                    className={`whitespace-nowrap px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors ${
+                      statusFilter === opt.key
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Type filter row */}
+            <div className="flex items-center gap-1 overflow-x-auto subtle-scroll">
+              {TYPE_FILTER_OPTIONS.map((opt) => (
                 <button
                   key={opt.key}
-                  onClick={() => setStatusFilter(opt.key)}
-                  className={`whitespace-nowrap px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors ${
-                    statusFilter === opt.key
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  onClick={() => setTypeFilter(opt.key)}
+                  className={`whitespace-nowrap px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${
+                    typeFilter === opt.key
+                      ? "border-primary/30 bg-primary/10 text-primary"
+                      : "border-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"
                   }`}
                 >
                   {opt.label}
@@ -615,6 +678,21 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
         </div>
         )}
       </div>
+
+      {/* Full-size image modal */}
+      {expandedImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setExpandedImage(null)}>
+          <div className="relative max-w-[90vw] max-h-[90vh]">
+            <img src={expandedImage} alt="Hazard full" className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" />
+            <button
+              onClick={() => setExpandedImage(null)}
+              className="absolute top-3 right-3 p-1.5 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
