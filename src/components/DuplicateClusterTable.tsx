@@ -281,14 +281,14 @@ const DuplicateClusterTable = ({
                           <TooltipContent className="text-xs max-w-[260px]">{row.subKetidaksesuaian}</TooltipContent>
                         </Tooltip>
                       </td>
-                      <td className="text-center text-xs font-medium">
-                        <span className="inline-flex items-center justify-center w-7 h-6 rounded" style={{ backgroundColor: `hsl(0 70% ${Math.max(92 - row.jumlahDuplicate * 8, 40)}%)`, color: row.jumlahDuplicate >= 3 ? 'white' : 'inherit' }}>{row.jumlahDuplicate}</span>
+                      <td className="text-center text-xs font-medium p-0">
+                        <div className="flex items-center justify-center h-full py-1.5" style={{ backgroundColor: `hsl(213 60% ${Math.max(94 - row.jumlahDuplicate * 7, 45)}%)`, color: row.jumlahDuplicate >= 3 ? 'white' : 'hsl(213 40% 30%)' }}>{row.jumlahDuplicate}</div>
                       </td>
-                      <td className="text-center text-xs font-medium">
-                        <span className="inline-flex items-center justify-center w-7 h-6 rounded" style={{ backgroundColor: `hsl(0 70% ${Math.max(92 - row.jumlahPotentialDuplicate * 8, 40)}%)`, color: row.jumlahPotentialDuplicate >= 3 ? 'white' : 'inherit' }}>{row.jumlahPotentialDuplicate}</span>
+                      <td className="text-center text-xs font-medium p-0">
+                        <div className="flex items-center justify-center h-full py-1.5" style={{ backgroundColor: `hsl(213 60% ${Math.max(94 - row.jumlahPotentialDuplicate * 7, 45)}%)`, color: row.jumlahPotentialDuplicate >= 3 ? 'white' : 'hsl(213 40% 30%)' }}>{row.jumlahPotentialDuplicate}</div>
                       </td>
-                      <td className="text-center text-xs font-medium">
-                        <span className="inline-flex items-center justify-center w-7 h-6 rounded" style={{ backgroundColor: `hsl(0 70% ${Math.max(92 - row.jumlahDuplicateBySystem * 8, 40)}%)`, color: row.jumlahDuplicateBySystem >= 3 ? 'white' : 'inherit' }}>{row.jumlahDuplicateBySystem}</span>
+                      <td className="text-center text-xs font-medium p-0">
+                        <div className="flex items-center justify-center h-full py-1.5" style={{ backgroundColor: `hsl(213 60% ${Math.max(94 - row.jumlahDuplicateBySystem * 7, 45)}%)`, color: row.jumlahDuplicateBySystem >= 3 ? 'white' : 'hsl(213 40% 30%)' }}>{row.jumlahDuplicateBySystem}</div>
                       </td>
                       <td className="text-center text-xs">
                         <div className="flex items-center justify-center gap-1.5">
