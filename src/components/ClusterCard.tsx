@@ -105,34 +105,38 @@ const ClusterCard = ({ data, countdown = 0, onClick }: ClusterCardProps) => {
         </div>
       )}
 
-      {/* Body — image + description side by side */}
-      <div className="px-4 py-3 space-y-2.5">
+      {/* Body — image left, info right */}
+      <div className="px-4 py-3">
         <div className="flex gap-3">
-          <div className="h-16 w-16 rounded bg-secondary flex items-center justify-center flex-shrink-0 border border-border">
+          {/* Image */}
+          <div className="h-20 w-20 rounded bg-secondary flex items-center justify-center flex-shrink-0 border border-border">
             <ImageIcon className="h-5 w-5 text-muted-foreground/30" />
           </div>
-          <div className="min-w-0 flex-1">
+
+          {/* Info stack */}
+          <div className="min-w-0 flex-1 flex flex-col gap-1.5">
+            {/* Location */}
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <MapPin className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">{data.site} · {data.location} · {data.detailLocation}</span>
+            </div>
+
+            {/* Classification */}
+            <div className="flex items-start gap-1.5">
+              <AlertTriangle className="h-3 w-3 text-pill-yellow-fg flex-shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold text-foreground leading-tight truncate">{data.classificationTitle}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{data.classificationSubtitle}</p>
+              </div>
+            </div>
+
+            {/* Description */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <p className="text-[11px] text-muted-foreground line-clamp-3 leading-relaxed">{data.description}</p>
+                <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">{data.description}</p>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="max-w-[280px] text-xs">{data.description}</TooltipContent>
             </Tooltip>
-          </div>
-        </div>
-
-        {/* Location */}
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <MapPin className="h-3 w-3 flex-shrink-0" />
-          <span className="truncate">{data.site} · {data.location} · {data.detailLocation}</span>
-        </div>
-
-        {/* Classification */}
-        <div className="flex items-start gap-1.5">
-          <AlertTriangle className="h-3 w-3 text-pill-yellow-fg flex-shrink-0 mt-0.5" />
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold text-foreground leading-tight truncate">{data.classificationTitle}</p>
-            <p className="text-[10px] text-muted-foreground truncate">{data.classificationSubtitle}</p>
           </div>
         </div>
       </div>
