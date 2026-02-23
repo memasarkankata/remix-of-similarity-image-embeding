@@ -281,9 +281,15 @@ const DuplicateClusterTable = ({
                           <TooltipContent className="text-xs max-w-[260px]">{row.subKetidaksesuaian}</TooltipContent>
                         </Tooltip>
                       </td>
-                      <td className="text-center text-xs font-medium">{row.jumlahDuplicate}</td>
-                      <td className="text-center text-xs font-medium">{row.jumlahPotentialDuplicate}</td>
-                      <td className="text-center text-xs font-medium">{row.jumlahDuplicateBySystem}</td>
+                      <td className="text-center text-xs font-medium">
+                        <span className="inline-flex items-center justify-center w-7 h-6 rounded" style={{ backgroundColor: `hsl(0 70% ${Math.max(92 - row.jumlahDuplicate * 8, 40)}%)`, color: row.jumlahDuplicate >= 3 ? 'white' : 'inherit' }}>{row.jumlahDuplicate}</span>
+                      </td>
+                      <td className="text-center text-xs font-medium">
+                        <span className="inline-flex items-center justify-center w-7 h-6 rounded" style={{ backgroundColor: `hsl(0 70% ${Math.max(92 - row.jumlahPotentialDuplicate * 8, 40)}%)`, color: row.jumlahPotentialDuplicate >= 3 ? 'white' : 'inherit' }}>{row.jumlahPotentialDuplicate}</span>
+                      </td>
+                      <td className="text-center text-xs font-medium">
+                        <span className="inline-flex items-center justify-center w-7 h-6 rounded" style={{ backgroundColor: `hsl(0 70% ${Math.max(92 - row.jumlahDuplicateBySystem * 8, 40)}%)`, color: row.jumlahDuplicateBySystem >= 3 ? 'white' : 'inherit' }}>{row.jumlahDuplicateBySystem}</span>
+                      </td>
                       <td className="text-center text-xs">
                         <div className="flex items-center justify-center gap-1.5">
                           <span className="font-medium tabular-nums w-4 text-right">{row.jumlahWaiting}</span>
