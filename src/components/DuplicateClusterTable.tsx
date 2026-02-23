@@ -281,18 +281,12 @@ const DuplicateClusterTable = ({
                           <TooltipContent className="text-xs max-w-[260px]">{row.subKetidaksesuaian}</TooltipContent>
                         </Tooltip>
                       </td>
+                      <td className="text-center text-xs font-medium">{row.jumlahDuplicate}</td>
+                      <td className="text-center text-xs font-medium">{row.jumlahPotentialDuplicate}</td>
+                      <td className="text-center text-xs font-medium">{row.jumlahDuplicateBySystem}</td>
                       <td className="text-center text-xs">
-                        <span className={`font-medium ${row.jumlahDuplicate >= 3 ? "text-destructive font-bold" : row.jumlahDuplicate >= 2 ? "text-destructive/80 font-semibold" : "text-muted-foreground"}`}>{row.jumlahDuplicate}</span>
-                      </td>
-                      <td className="text-center text-xs">
-                        <span className={`font-medium ${row.jumlahPotentialDuplicate >= 3 ? "text-bar-orange font-bold" : row.jumlahPotentialDuplicate >= 2 ? "text-bar-orange/80 font-semibold" : "text-muted-foreground"}`}>{row.jumlahPotentialDuplicate}</span>
-                      </td>
-                      <td className="text-center text-xs">
-                        <span className={`font-medium ${row.jumlahDuplicateBySystem >= 3 ? "text-primary font-bold" : row.jumlahDuplicateBySystem >= 2 ? "text-primary/80 font-semibold" : row.jumlahDuplicateBySystem >= 1 ? "text-primary/60" : "text-muted-foreground"}`}>{row.jumlahDuplicateBySystem}</span>
-                      </td>
-                      <td className="text-center text-xs">
-                        <div className="flex flex-col items-center justify-center">
-                          <span className="font-medium tabular-nums">{row.jumlahWaiting}</span>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <span className="font-medium tabular-nums w-4 text-right">{row.jumlahWaiting}</span>
                           {row.jumlahWaiting > 0 && countdown > 0 && (
                             <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono tabular-nums ${
                               countdown < 600 ? "text-destructive" : countdown < 1800 ? "text-bar-orange" : countdown < 3600 ? "text-pill-yellow-fg" : "text-muted-foreground"
