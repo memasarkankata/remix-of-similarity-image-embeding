@@ -51,7 +51,7 @@ const ClusterCard = ({ data, countdown = 0, onClick }: ClusterCardProps) => {
     { label: "Duplicate", value: data.jumlahDuplicate ?? 0 },
     { label: "Potential", value: data.jumlahPotentialDuplicate ?? 0 },
     { label: "By System", value: data.jumlahDuplicateBySystem ?? 0 },
-    { label: "Waiting", value: waitingCount },
+    { label: "Pending SLA", value: waitingCount },
   ];
 
   return (
@@ -100,7 +100,7 @@ const ClusterCard = ({ data, countdown = 0, onClick }: ClusterCardProps) => {
       {waitingCount > 0 && countdown > 0 && (
         <div className="px-4 py-1.5 border-b border-border bg-pill-yellow-bg/30 flex items-center gap-1.5">
           <Clock className="h-3 w-3 text-pill-yellow-fg" />
-          <span className="text-[10px] font-medium text-pill-yellow-fg">Waiting</span>
+          <span className="text-[10px] font-medium text-pill-yellow-fg">Pending SLA</span>
           <span className="ml-auto text-[11px] font-bold font-mono tabular-nums text-pill-yellow-fg">{formatCountdown(countdown)}</span>
         </div>
       )}
