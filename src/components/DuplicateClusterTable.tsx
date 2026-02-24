@@ -65,7 +65,7 @@ const SORT_OPTIONS: { label: string; field: SortField }[] = [
   { label: "Duplicate ↓", field: "jumlahDuplicate" },
   { label: "Potential ↓", field: "jumlahPotentialDuplicate" },
   { label: "By System ↓", field: "jumlahDuplicateBySystem" },
-  { label: "Pending SLA ↓", field: "jumlahWaiting" },
+  { label: "Waiting ↓", field: "jumlahWaiting" },
 ];
 
 /** Format seconds to h:mm:ss or mm:ss */
@@ -114,7 +114,7 @@ const DuplicateClusterTable = ({
     { key: "jumlahDuplicate", label: "Duplicate", type: "range", options: JUMLAH_RANGES },
     { key: "jumlahPotentialDuplicate", label: "Potential", type: "range", options: JUMLAH_RANGES },
     { key: "jumlahDuplicateBySystem", label: "By System", type: "range", options: JUMLAH_RANGES },
-    { key: "jumlahWaiting", label: "Pending SLA", type: "range", options: JUMLAH_RANGES },
+    { key: "jumlahWaiting", label: "Waiting", type: "range", options: JUMLAH_RANGES },
   ];
 
   const filtered = clusterData.filter((c) => {
@@ -239,7 +239,7 @@ const DuplicateClusterTable = ({
                   <SortHeader label="Duplicate" field="jumlahDuplicate" />
                   <SortHeader label="Potential" field="jumlahPotentialDuplicate" />
                   <SortHeader label="By System" field="jumlahDuplicateBySystem" />
-                  <SortHeader label="Pending SLA" field="jumlahWaiting" />
+                  <SortHeader label="Waiting" field="jumlahWaiting" />
                   <SortHeader label="Similarity" field="similarity" />
                   <PlainHeader label="View" />
                 </tr>

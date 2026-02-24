@@ -127,7 +127,7 @@ const dummyClusters: ClusterInfo[] = [
         id: "23920", fullId: "HR-2025-336-23920", date: "02 Des 2025", timestamp: "11:20",
         pic: "Bambang Sutrisno", picPerusahaan: "PT Berau Coal",
         status: "Waiting", description: "Driver LV tidak menggunakan seatbelt saat melintas gerbang.",
-        similarity: 83, autoConfirmSeconds: undefined,
+        similarity: 83, autoConfirmSeconds: 97,
         site: "BMO 1", location: "Hauling Road", detailLokasi: "Gerbang Utama Site", keteranganLokasi: "(B 65) Area Gerbang",
         deskripsi: "Driver LV tidak menggunakan seatbelt saat melintas gerbang.",
         imageSim: 55, textSim: 82, totalSim: 83, simLabel: "Gambar Potential Mirip",
@@ -189,7 +189,7 @@ const SemanticReview = ({ clusterId, onBack, compact = false, selectedHazardId, 
     if (statusFilter !== "All") {
       if (statusFilter === "Annotated" && r.status !== "Duplicate" && r.status !== "Potential Duplicate") return false;
       if (statusFilter === "Auto-confirm" && r.status !== "Duplicate by System" && r.status !== "Confirmed") return false;
-      if (statusFilter === "Waiting" && r.status !== "Waiting") return false;
+      if (statusFilter === "Waiting" && !(r.autoConfirmSeconds !== undefined && r.autoConfirmSeconds > 0)) return false;
     }
     // Type filter
     if (typeFilter !== "All") {
